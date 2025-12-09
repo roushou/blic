@@ -68,23 +68,30 @@ export function info(message: string): string {
   return `${color.blue("info:")} ${message}`;
 }
 
+export interface Spinner {
+  start(): Spinner;
+  stop(finalText?: string): Spinner;
+  succeed(message?: string): Spinner;
+  fail(message?: string): Spinner;
+}
+
 /**
  * Simple spinner for async operations
  */
-export function createSpinner(text: string) {
+export function createSpinner(text: string): Spinner {
   const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
   let frameIndex = 0;
   let interval: ReturnType<typeof setInterval> | null = null;
 
   return {
-    start() {
+    start(): Spinner {
       interval = setInterval(() => {
         process.stdout.write(`\r${color.cyan(frames[frameIndex % frames.length]!)} ${text}`);
         frameIndex++;
       }, 80);
       return this;
     },
-    stop(finalText?: string) {
+    stop(finalText?: string): Spinner {
       if (interval) {
         clearInterval(interval);
         interval = null;
@@ -95,10 +102,10 @@ export function createSpinner(text: string) {
       }
       return this;
     },
-    succeed(message?: string) {
+    succeed(message?: string): Spinner {
       return this.stop(`${color.green("✓")} ${message ?? text}`);
     },
-    fail(message?: string) {
+    fail(message?: string): Spinner {
       return this.stop(`${color.red("✗")} ${message ?? text}`);
     },
   };
