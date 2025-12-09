@@ -1,42 +1,167 @@
 /**
- * Shared stdin reader utility using Bun's console AsyncIterable
+ * Shared stdin reader utility using process.stdin directly
  */
 
-let consoleIterator: AsyncIterator<string> | null = null;
-let readCount = 0;
+import * as tty from "node:tty";
+import * as readline from "node:readline";
 
-function getConsoleIterator(): AsyncIterator<string> {
-  if (!consoleIterator) {
-    // console is an AsyncIterable in Bun that yields lines from stdin
-    consoleIterator = (console as unknown as AsyncIterable<string>)[Symbol.asyncIterator]();
+let readCount = 0;
+let rl: readline.Interface | null = null;
+
+/**
+ * Get or create readline interface for line-based input
+ */
+function getReadline(): readline.Interface {
+  if (!rl) {
+    rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: false,
+    });
   }
-  return consoleIterator;
+  return rl;
 }
 
 /**
- * Read a single line from stdin using Bun's console AsyncIterable
+ * Read a single line from stdin
  */
-export async function readLine(): Promise<string> {
+export function readLine(): Promise<string> {
   readCount++;
-  const iterator = getConsoleIterator();
-  const result = await iterator.next();
 
-  if (result.done) {
-    return "";
+  return new Promise((resolve) => {
+    const rlInterface = getReadline();
+
+    const onLine = (line: string): void => {
+      rlInterface.removeListener("line", onLine);
+      rlInterface.removeListener("close", onClose);
+      resolve(line);
+    };
+
+    const onClose = (): void => {
+      rlInterface.removeListener("line", onLine);
+      rlInterface.removeListener("close", onClose);
+      resolve("");
+    };
+
+    rlInterface.once("line", onLine);
+    rlInterface.once("close", onClose);
+  });
+}
+
+/**
+ * Key event from raw keypress reading
+ */
+export interface KeyPress {
+  name: string;
+  ctrl: boolean;
+  meta: boolean;
+  shift: boolean;
+  raw: string;
+}
+
+/**
+ * Parse raw input bytes into a KeyPress event
+ */
+function parseKeyPress(data: Buffer): KeyPress {
+  const raw = data.toString();
+  let name = raw;
+  let ctrl = false;
+  const meta = false;
+  const shift = false;
+
+  // Handle escape sequences (arrow keys, etc.)
+  if (raw === "\x1b[A" || raw === "\x1bOA") {
+    name = "up";
+  } else if (raw === "\x1b[B" || raw === "\x1bOB") {
+    name = "down";
+  } else if (raw === "\x1b[C" || raw === "\x1bOC") {
+    name = "right";
+  } else if (raw === "\x1b[D" || raw === "\x1bOD") {
+    name = "left";
+  } else if (raw === "\r" || raw === "\n") {
+    name = "return";
+  } else if (raw === "\x1b" || raw === "\x1b\x1b") {
+    name = "escape";
+  } else if (raw === " ") {
+    name = "space";
+  } else if (raw === "\x7f" || raw === "\b") {
+    name = "backspace";
+  } else if (raw === "\t") {
+    name = "tab";
+  } else if (raw.length === 1) {
+    const code = raw.charCodeAt(0);
+    // Ctrl+letter (0x01-0x1a maps to a-z)
+    if (code >= 1 && code <= 26) {
+      ctrl = true;
+      name = String.fromCharCode(code + 96); // Convert to letter
+    } else {
+      name = raw;
+    }
   }
 
-  return result.value;
+  return { name, ctrl, meta, shift, raw };
+}
+
+/**
+ * Read a single keypress in raw mode
+ */
+export async function readKey(): Promise<KeyPress> {
+  readCount++;
+
+  const stdin = process.stdin;
+  const isTTY = tty.isatty(0);
+
+  if (!isTTY) {
+    // Fallback for non-TTY: read a line and return first char as key
+    const line = await readLine();
+    return parseKeyPress(Buffer.from(line.slice(0, 1) || "\n"));
+  }
+
+  // Close readline interface before using raw mode to avoid conflicts
+  if (rl) {
+    rl.close();
+    rl = null;
+  }
+
+  // Enable raw mode
+  if (stdin.isTTY) {
+    stdin.setRawMode(true);
+  }
+  stdin.resume();
+
+  return new Promise((resolve) => {
+    const onData = (data: Buffer): void => {
+      stdin.removeListener("data", onData);
+      if (stdin.isTTY) {
+        stdin.setRawMode(false);
+      }
+      stdin.pause();
+      resolve(parseKeyPress(data));
+    };
+
+    stdin.once("data", onData);
+  });
 }
 
 /**
  * Close the stdin reader to allow the process to exit
  */
 export function closeStdin(): void {
-  if (consoleIterator?.return) {
-    consoleIterator.return(undefined);
+  if (rl) {
+    rl.close();
+    rl = null;
   }
-  consoleIterator = null;
   readCount = 0;
+
+  // Ensure stdin is paused and not in raw mode
+  if (process.stdin.isTTY) {
+    try {
+      process.stdin.setRawMode(false);
+    } catch {
+      // Ignore errors if already closed
+    }
+  }
+  process.stdin.pause();
 }
 
 /**
