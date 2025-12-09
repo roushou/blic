@@ -1,4 +1,5 @@
 import { color } from "../output/color.ts";
+import { readLine } from "./stdin.ts";
 
 export interface ConfirmOptions {
   message: string;
@@ -17,25 +18,7 @@ export async function confirm(options: ConfirmOptions): Promise<boolean> {
 
   process.stdout.write(prompt);
 
-  // Read from stdin
-  const reader = Bun.stdin.stream().getReader();
-  const decoder = new TextDecoder();
-  let input = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    input += chunk;
-
-    if (input.includes("\n")) {
-      break;
-    }
-  }
-
-  reader.releaseLock();
-
+  const input = await readLine();
   const result = input.trim().toLowerCase();
 
   if (result === "") {

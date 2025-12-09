@@ -1,4 +1,5 @@
 import { color } from "../output/color.ts";
+import { readLine } from "./stdin.ts";
 
 export interface PasswordOptions {
   message: string;
@@ -19,27 +20,7 @@ export async function password(options: PasswordOptions): Promise<string> {
 
   process.stdout.write(prompt);
 
-  // Read from stdin
-  // Note: In a real implementation, we'd disable terminal echo
-  // This requires native bindings or using a library like `readline`
-  const reader = Bun.stdin.stream().getReader();
-  const decoder = new TextDecoder();
-  let input = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    input += chunk;
-
-    if (input.includes("\n")) {
-      break;
-    }
-  }
-
-  reader.releaseLock();
-
+  const input = await readLine();
   const result = input.trim();
 
   // Validate

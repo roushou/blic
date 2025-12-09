@@ -1,4 +1,5 @@
 import { color } from "../output/color.ts";
+import { readLine } from "./stdin.ts";
 
 export interface SelectOption<T = string> {
   label: string;
@@ -45,25 +46,7 @@ export async function select<T = string>(options: SelectOptions<T>): Promise<T> 
     defaultIndex >= 0 ? `1-${choices.length}, default: ${defaultIndex + 1}` : `1-${choices.length}`;
   process.stdout.write(color.dim(`  Enter choice (${hint}): `));
 
-  // Read from stdin
-  const reader = Bun.stdin.stream().getReader();
-  const decoder = new TextDecoder();
-  let input = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    input += chunk;
-
-    if (input.includes("\n")) {
-      break;
-    }
-  }
-
-  reader.releaseLock();
-
+  const input = await readLine();
   const result = input.trim();
 
   // Use default if empty
@@ -105,25 +88,7 @@ export async function multiselect<T = string>(
   // Prompt for selection
   process.stdout.write(color.dim(`  Enter choices (comma-separated, e.g., 1,3,4): `));
 
-  // Read from stdin
-  const reader = Bun.stdin.stream().getReader();
-  const decoder = new TextDecoder();
-  let input = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    input += chunk;
-
-    if (input.includes("\n")) {
-      break;
-    }
-  }
-
-  reader.releaseLock();
-
+  const input = await readLine();
   const result = input.trim();
 
   if (result === "") {

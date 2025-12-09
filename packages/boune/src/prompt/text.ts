@@ -1,4 +1,5 @@
 import { color } from "../output/color.ts";
+import { readLine } from "./stdin.ts";
 
 export interface TextOptions {
   message: string;
@@ -22,25 +23,7 @@ export async function text(options: TextOptions): Promise<string> {
 
   process.stdout.write(prompt);
 
-  // Read from stdin
-  const reader = Bun.stdin.stream().getReader();
-  const decoder = new TextDecoder();
-  let input = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value);
-    input += chunk;
-
-    if (input.includes("\n")) {
-      break;
-    }
-  }
-
-  reader.releaseLock();
-
+  const input = await readLine();
   let result = input.trim();
 
   // Apply default if empty

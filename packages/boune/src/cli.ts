@@ -13,6 +13,7 @@ import { Command } from "./command.ts";
 import { parseArguments, parseOptions, tokenize } from "./parser/index.ts";
 import { generateCliHelp, generateCommandHelp } from "./output/help.ts";
 import { error as formatError } from "./output/format.ts";
+import { closeStdin } from "./prompt/stdin.ts";
 
 /**
  * Main CLI builder class
@@ -303,6 +304,9 @@ export class Cli {
       console.error(formatError(error.message));
       await this.runHooks("postError", command, args, allOptions, error);
       process.exit(1);
+    } finally {
+      // Close stdin to allow process to exit naturally
+      closeStdin();
     }
   }
 }
