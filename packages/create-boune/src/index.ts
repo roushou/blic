@@ -1,95 +1,131 @@
 #!/usr/bin/env bun
 
-import { cli, command, color, createSpinner } from "boune";
+import { color, createSpinner } from "boune";
 import { text, select, confirm } from "boune/prompt";
 import { generateProject } from "./generator.ts";
+import { closeStdin } from "boune/prompt";
 
-const create = command("create")
-  .description("Create a new CLI project")
-  .argument("[name]", "Project name")
-  .option("-t, --template <template>", "Template to use (minimal, full)")
-  .option("--no-install", "Skip installing dependencies")
-  .option("--no-git", "Skip git initialization")
-  .action(async ({ args, options }) => {
-    console.log();
-    console.log(color.bold("  Create a new CLI with boune"));
-    console.log();
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
 
-    // Project name
-    let name = args.name as string | undefined;
-    if (!name) {
-      name = await text({
-        message: "Project name:",
-        default: "my-cli",
-        validate: (v) => {
-          if (!v) return "Project name is required";
-          if (!/^[a-z0-9-]+$/.test(v)) return "Use lowercase letters, numbers, and hyphens only";
-          return true;
-        },
-      });
+  // Handle --help
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(`
+  ${color.bold("create-boune")} - Scaffold a new CLI project with boune
+
+  ${color.dim("Usage:")}
+    bun create boune [name] [options]
+
+  ${color.dim("Options:")}
+    -t, --template <template>  Template to use (minimal, full)
+    --no-install               Skip installing dependencies
+    --no-git                   Skip git initialization
+    -h, --help                 Show help
+    -V, --version              Show version
+`);
+    return;
+  }
+
+  // Handle --version
+  if (args.includes("--version") || args.includes("-V")) {
+    console.log("0.1.0");
+    return;
+  }
+
+  // Parse args
+  let projectName: string | undefined;
+  let template: string | undefined;
+  let skipInstall = false;
+  let skipGit = false;
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!;
+    if (arg === "-t" || arg === "--template") {
+      template = args[++i];
+    } else if (arg === "--no-install") {
+      skipInstall = true;
+    } else if (arg === "--no-git") {
+      skipGit = true;
+    } else if (!arg.startsWith("-")) {
+      projectName = arg;
     }
+  }
 
-    // Template
-    let template = options.template as string | undefined;
-    if (!template) {
-      template = await select({
-        message: "Select a template:",
-        options: [
-          { label: "Minimal", value: "minimal", hint: "Basic CLI with one command" },
-          { label: "Full", value: "full", hint: "Multiple commands, prompts, and hooks" },
-        ],
-        default: "minimal",
-      });
-    }
+  console.log();
+  console.log(color.bold("  Create a new CLI with boune"));
+  console.log();
 
-    // Confirmation
-    console.log();
-    console.log(color.dim("  Project: ") + color.cyan(name));
-    console.log(color.dim("  Template: ") + color.cyan(template));
-    console.log();
-
-    const proceed = await confirm({
-      message: "Create project?",
-      default: true,
+  // Project name
+  if (!projectName) {
+    projectName = await text({
+      message: "Project name:",
+      default: "my-cli",
+      validate: (v) => {
+        if (!v) return "Project name is required";
+        if (!/^[a-z0-9-]+$/.test(v)) return "Use lowercase letters, numbers, and hyphens only";
+        return true;
+      },
     });
+  }
 
-    if (!proceed) {
-      console.log(color.dim("\n  Cancelled.\n"));
-      return;
-    }
+  // Template
+  if (!template) {
+    template = await select({
+      message: "Select a template:",
+      options: [
+        { label: "Minimal", value: "minimal", hint: "Basic CLI with one command" },
+        { label: "Full", value: "full", hint: "Multiple commands, prompts, and hooks" },
+      ],
+      default: "minimal",
+    });
+  }
 
-    // Generate project
-    console.log();
-    const spinner = createSpinner("Creating project...").start();
+  // Confirmation
+  console.log();
+  console.log(color.dim("  Project: ") + color.cyan(projectName));
+  console.log(color.dim("  Template: ") + color.cyan(template));
+  console.log();
 
-    try {
-      await generateProject({
-        name,
-        template: template as "minimal" | "full",
-        skipInstall: options["no-install"] as boolean,
-        skipGit: options["no-git"] as boolean,
-      });
-
-      spinner.succeed("Project created!");
-
-      // Next steps
-      console.log();
-      console.log(color.bold("  Next steps:"));
-      console.log();
-      console.log(`  ${color.cyan("cd")} ${name}`);
-      if (options["no-install"]) {
-        console.log(`  ${color.cyan("bun install")}`);
-      }
-      console.log(`  ${color.cyan("bun run dev")}`);
-      console.log();
-    } catch (err) {
-      spinner.fail(`Failed: ${err}`);
-      process.exit(1);
-    }
+  const proceed = await confirm({
+    message: "Create project?",
+    default: true,
   });
 
-cli("create-boune")
-  .version("0.1.0")
-  .description("Scaffold a new CLI project with boune")
-  .command(create)
-  .run();
+  if (!proceed) {
+    console.log(color.dim("\n  Cancelled.\n"));
+    return;
+  }
+
+  // Generate project
+  console.log();
+  const spinner = createSpinner("Creating project...").start();
+
+  try {
+    await generateProject({
+      name: projectName,
+      template: template as "minimal" | "full",
+      skipInstall,
+      skipGit,
+    });
+
+    spinner.succeed("Project created!");
+
+    // Next steps
+    console.log();
+    console.log(color.bold("  Next steps:"));
+    console.log();
+    console.log(`  ${color.cyan("cd")} ${projectName}`);
+    if (skipInstall) {
+      console.log(`  ${color.cyan("bun install")}`);
+    }
+    console.log(`  ${color.cyan("bun run dev")}`);
+    console.log();
+  } catch (err) {
+    spinner.fail(`Failed: ${err}`);
+    process.exit(1);
+  }
+}
+
+main().finally(() => {
+  closeStdin();
+});

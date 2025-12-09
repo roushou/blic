@@ -1,6 +1,6 @@
 {
   "name": "create-boune",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Scaffold a new CLI project with boune",
   "author": "Kenji Lau",
