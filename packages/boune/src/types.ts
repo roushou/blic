@@ -2,6 +2,8 @@
  * Core types for the boune CLI framework
  */
 
+import type { AnyValidator } from "./validation/types.ts";
+
 /** Supported argument types */
 export type ArgumentType = "string" | "number" | "boolean";
 
@@ -13,6 +15,7 @@ export interface ArgumentDef {
   type: ArgumentType;
   default?: unknown;
   variadic?: boolean;
+  validate?: AnyValidator;
 }
 
 /** Option/flag definition */
@@ -24,6 +27,7 @@ export interface OptionDef {
   required: boolean;
   default?: unknown;
   env?: string;
+  validate?: AnyValidator;
 }
 
 /** Parsed argument values */
@@ -102,7 +106,12 @@ export interface ParseResult {
 
 /** Validation error */
 export interface ValidationError {
-  type: "missing_required" | "invalid_type" | "unknown_option" | "unknown_command";
+  type:
+    | "missing_required"
+    | "invalid_type"
+    | "unknown_option"
+    | "unknown_command"
+    | "validation_failed";
   message: string;
   field?: string;
 }

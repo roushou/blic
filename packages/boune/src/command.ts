@@ -9,6 +9,7 @@ import type {
   ParsedArgs,
   ParsedOptions,
 } from "./types.ts";
+import type { AnyValidator } from "./validation/types.ts";
 
 /**
  * Parse argument syntax like "<name>" or "[name]" or "<files...>"
@@ -106,7 +107,7 @@ export class Command<
   argument<TName extends string>(
     syntax: TName,
     description: string,
-    options?: { type?: ArgumentType; default?: unknown },
+    options?: { type?: ArgumentType; default?: unknown; validate?: AnyValidator },
   ): Command<TArgs & { [K in TName]: unknown }, TOpts> {
     const parsed = parseArgumentSyntax(syntax);
     this.config.arguments.push({
@@ -114,6 +115,7 @@ export class Command<
       description,
       type: options?.type ?? "string",
       default: options?.default,
+      validate: options?.validate,
     });
     return this as unknown as Command<TArgs & { [K in TName]: unknown }, TOpts>;
   }
@@ -127,7 +129,13 @@ export class Command<
   option<TName extends string>(
     syntax: TName,
     description: string,
-    options?: { type?: ArgumentType; default?: unknown; required?: boolean; env?: string },
+    options?: {
+      type?: ArgumentType;
+      default?: unknown;
+      required?: boolean;
+      env?: string;
+      validate?: AnyValidator;
+    },
   ): Command<TArgs, TOpts & { [K in TName]: unknown }> {
     const parsed = parseOptionSyntax(syntax);
     this.config.options.push({
@@ -137,6 +145,7 @@ export class Command<
       default: options?.default,
       required: options?.required ?? false,
       env: options?.env,
+      validate: options?.validate,
     });
     return this as unknown as Command<TArgs, TOpts & { [K in TName]: unknown }>;
   }

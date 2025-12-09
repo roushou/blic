@@ -163,5 +163,20 @@ export function parseOptions(
     }
   }
 
+  // Run custom validators
+  for (const def of definitions) {
+    const value = options[def.name];
+    if (value !== undefined && def.validate) {
+      const result = def.validate.validate(value);
+      if (result !== true) {
+        errors.push({
+          type: "validation_failed",
+          message: `Invalid value for --${def.name}: ${result}`,
+          field: def.name,
+        });
+      }
+    }
+  }
+
   return { options, errors, remaining };
 }

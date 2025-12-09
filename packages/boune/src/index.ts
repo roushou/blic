@@ -38,3 +38,15 @@ export {
   createSpinner,
   createProgressBar,
 } from "./output/index.ts";
+
+// Validation
+export { v } from "./validation/index.ts";
+export type {
+  ValidationResult,
+  ValidationRule,
+  Validator,
+  AnyValidator,
+  StringValidator,
+  NumberValidator,
+  BooleanValidator,
+} from "./validation/index.ts";

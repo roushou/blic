@@ -9,6 +9,7 @@ import {
   color,
   createSpinner,
   createProgressBar,
+  v,
 } from "../packages/boune/src/index.ts";
 import { text, confirm, select } from "../packages/boune/src/prompt/index.ts";
 
@@ -90,6 +91,32 @@ const init = command("init")
     console.log(`  ${color.green("→")} bun run dev\n`);
   });
 
+// Serve command with validation
+const serve = command("serve")
+  .description("Start a development server")
+  .option("-p, --port <port>", "Port to listen on", {
+    type: "number",
+    default: 3000,
+    validate: v.number().integer().min(1).max(65535),
+  })
+  .option("-H, --host <host>", "Host to bind to", {
+    type: "string",
+    default: "localhost",
+    validate: v.string().oneOf(["localhost", "0.0.0.0", "127.0.0.1"]),
+  })
+  .option("-e, --env <env>", "Environment", {
+    type: "string",
+    default: "development",
+    validate: v.string().oneOf(["development", "staging", "production"]),
+  })
+  .action(({ options }) => {
+    console.log(color.bold("\nStarting server...\n"));
+    console.log(`  Host: ${options.host}`);
+    console.log(`  Port: ${options.port}`);
+    console.log(`  Env:  ${options.env}`);
+    console.log(color.green(`\n  Server running at http://${options.host}:${options.port}\n`));
+  });
+
 // Download command with progress bar
 const download = command("download")
   .description("Simulate downloading files")
@@ -116,5 +143,6 @@ cli("demo")
   .command(greet)
   .command(build)
   .command(init)
+  .command(serve)
   .command(download)
   .run();
