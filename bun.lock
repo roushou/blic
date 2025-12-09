@@ -14,6 +14,16 @@
       "name": "boune",
       "version": "0.1.0",
     },
+    "packages/create-boune": {
+      "name": "create-boune",
+      "version": "0.1.0",
+      "bin": {
+        "create-boune": "./src/index.ts",
+      },
+      "dependencies": {
+        "boune": "^0.1.0",
+      },
+    },
   },
   "packages": {
     "@oxfmt/darwin-arm64": ["@oxfmt/darwin-arm64@0.17.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-OMv0tOb+xiwSZKjYbM6TwMSP5QwFJlBGQmEsk98QJ30sHhdyC//0UvGKuR0KZuzZW4E0+k0rHDmos1Z5DmBEkA=="],
@@ -39,6 +49,8 @@
     "boune": ["boune@workspace:packages/boune"],
 
     "bun-types": ["bun-types@1.3.4", "", { "dependencies": { "@types/node": "*" } }, "sha512-5ua817+BZPZOlNaRgGBpZJOSAQ9RQ17pkwPD0yR7CfJg+r8DgIILByFifDTa+IPDDxzf5VNhtNlcKqFzDgJvlQ=="],
+
+    "create-boune": ["create-boune@workspace:packages/create-boune"],
 
     "oxfmt": ["oxfmt@0.17.0", "", { "optionalDependencies": { "@oxfmt/darwin-arm64": "0.17.0", "@oxfmt/darwin-x64": "0.17.0", "@oxfmt/linux-arm64-gnu": "0.17.0", "@oxfmt/linux-arm64-musl": "0.17.0", "@oxfmt/linux-x64-gnu": "0.17.0", "@oxfmt/linux-x64-musl": "0.17.0", "@oxfmt/win32-arm64": "0.17.0", "@oxfmt/win32-x64": "0.17.0" }, "bin": { "oxfmt": "bin/oxfmt" } }, "sha512-12Rmq2ub61rUZ3Pqnsvmo99rRQ6hQJwQsjnFnbvXYLMrlIsWT6SFVsrjAkBBrkXXSHv8ePIpKQ0nZph5KDrOqw=="],
 
