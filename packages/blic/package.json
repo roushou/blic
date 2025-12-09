@@ -1,0 +1,39 @@
+{
+  "name": "blic",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A batteries-included CLI framework for Bun — prompts, colors, spinners, and more",
+  "author": "Kenji Lau",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roushou/blic.git",
+    "directory": "packages/blic"
+  },
+  "homepage": "https://github.com/roushou/blic#readme",
+  "bugs": {
+    "url": "https://github.com/roushou/blic/issues"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./prompt": "./src/prompt/index.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "cli",
+    "bun",
+    "command-line",
+    "parser",
+    "framework",
+    "terminal",
+    "arguments",
+    "options",
+    "prompts",
+    "typescript"
+  ],
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

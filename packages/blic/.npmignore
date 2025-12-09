@@ -1,0 +1,11 @@
+# Tests
+tests/
+*.test.ts
+
+# Config files
+tsconfig.json
+jsr.json
+
+# Development
+.DS_Store
+*.log

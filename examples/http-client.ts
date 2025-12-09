@@ -1,0 +1,203 @@
+#!/usr/bin/env bun
+
+/**
+ * HTTP client CLI demonstrating async operations and environment variables
+ */
+import { cli, command, color, createSpinner } from "../packages/blic/src/index.ts";
+
+// GET request
+const get = command("get")
+  .description("Make a GET request")
+  .argument("<url>", "URL to fetch")
+  .option("-H, --header <header>", "Add header (can be repeated)")
+  .option("-o, --output <file>", "Write response to file")
+  .option("-v, --verbose", "Show response headers")
+  .option("--json", "Parse response as JSON")
+  .action(async ({ args, options }) => {
+    const url = args.url as string;
+    const spinner = createSpinner(`GET ${url}`).start();
+
+    try {
+      const headers: Record<string, string> = {};
+      if (options.header) {
+        const [key, value] = (options.header as string).split(":");
+        if (key && value) headers[key.trim()] = value.trim();
+      }
+
+      const response = await fetch(url, { headers });
+
+      if (options.verbose) {
+        spinner.stop();
+        console.log(color.cyan(`HTTP/${response.status} ${response.statusText}`));
+        response.headers.forEach((value, key) => {
+          console.log(color.dim(`${key}: ${value}`));
+        });
+        console.log("");
+      }
+
+      if (options.output) {
+        const content = await response.arrayBuffer();
+        await Bun.write(options.output as string, content);
+        spinner.succeed(`Saved to ${options.output}`);
+      } else if (options.json) {
+        const json = await response.json();
+        spinner.stop();
+        console.log(JSON.stringify(json, null, 2));
+      } else {
+        const text = await response.text();
+        spinner.stop();
+        console.log(text);
+      }
+    } catch (err) {
+      spinner.fail(`Request failed: ${err}`);
+      process.exit(1);
+    }
+  });
+
+// POST request
+const post = command("post")
+  .description("Make a POST request")
+  .argument("<url>", "URL to post to")
+  .option("-d, --data <data>", "Request body data")
+  .option("-f, --file <file>", "Read body from file")
+  .option("-H, --header <header>", "Add header")
+  .option("-t, --content-type <type>", "Content-Type header", { default: "application/json" })
+  .option("-v, --verbose", "Show response headers")
+  .action(async ({ args, options }) => {
+    const url = args.url as string;
+    const spinner = createSpinner(`POST ${url}`).start();
+
+    try {
+      let body: string;
+      if (options.file) {
+        body = await Bun.file(options.file as string).text();
+      } else if (options.data) {
+        body = options.data as string;
+      } else {
+        spinner.fail("No data provided (use --data or --file)");
+        process.exit(1);
+      }
+
+      const headers: Record<string, string> = {
+        "Content-Type": options["content-type"] as string,
+      };
+      if (options.header) {
+        const [key, value] = (options.header as string).split(":");
+        if (key && value) headers[key.trim()] = value.trim();
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body,
+      });
+
+      spinner.stop();
+
+      if (options.verbose) {
+        console.log(color.cyan(`HTTP/${response.status} ${response.statusText}`));
+        response.headers.forEach((value, key) => {
+          console.log(color.dim(`${key}: ${value}`));
+        });
+        console.log("");
+      }
+
+      const text = await response.text();
+      try {
+        console.log(JSON.stringify(JSON.parse(text), null, 2));
+      } catch {
+        console.log(text);
+      }
+    } catch (err) {
+      spinner.fail(`Request failed: ${err}`);
+      process.exit(1);
+    }
+  });
+
+// HEAD request
+const head = command("head")
+  .description("Make a HEAD request (headers only)")
+  .argument("<url>", "URL to check")
+  .action(async ({ args }) => {
+    const url = args.url as string;
+    const spinner = createSpinner(`HEAD ${url}`).start();
+
+    try {
+      const response = await fetch(url, { method: "HEAD" });
+      spinner.stop();
+
+      console.log(color.cyan(`HTTP/${response.status} ${response.statusText}`));
+      response.headers.forEach((value, key) => {
+        console.log(`${color.bold(key)}: ${value}`);
+      });
+    } catch (err) {
+      spinner.fail(`Request failed: ${err}`);
+      process.exit(1);
+    }
+  });
+
+// Download file
+const download = command("download")
+  .description("Download a file")
+  .alias("dl")
+  .argument("<url>", "URL to download")
+  .argument("[output]", "Output filename")
+  .option("-q, --quiet", "Suppress progress output")
+  .action(async ({ args, options }) => {
+    const url = args.url as string;
+    const output = (args.output as string) || url.split("/").pop() || "download";
+
+    const spinner = options.quiet ? null : createSpinner(`Downloading ${url}`).start();
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        spinner?.fail(`HTTP ${response.status}: ${response.statusText}`);
+        process.exit(1);
+      }
+
+      const contentLength = response.headers.get("content-length");
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+      const content = await response.arrayBuffer();
+      await Bun.write(output, content);
+
+      const size = formatSize(content.byteLength);
+      spinner?.succeed(`Downloaded ${output} (${size})`);
+
+      if (!options.quiet) {
+        console.log(color.dim(`  URL: ${url}`));
+        console.log(color.dim(`  Size: ${size}`));
+      }
+    } catch (err) {
+      spinner?.fail(`Download failed: ${err}`);
+      process.exit(1);
+    }
+  });
+
+function formatSize(bytes: number): string {
+  const units = ["B", "KB", "MB", "GB"];
+  let size = bytes;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit++;
+  }
+  return `${size.toFixed(unit > 0 ? 1 : 0)} ${units[unit]}`;
+}
+
+cli("http")
+  .version("1.0.0")
+  .description("HTTP client CLI")
+  .option("--base-url <url>", "Base URL for requests", { env: "HTTP_BASE_URL" })
+  .option("--timeout <ms>", "Request timeout", {
+    type: "number",
+    default: 30000,
+    env: "HTTP_TIMEOUT",
+  })
+  .command(get)
+  .command(post)
+  .command(head)
+  .command(download)
+  .run();

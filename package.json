@@ -1,0 +1,17 @@
+{
+  "name": "blic-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "oxfmt . --write",
+    "format:check": "oxfmt . --check"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "oxfmt": "^0.17.0",
+    "typescript": "^5"
+  }
+}
