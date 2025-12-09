@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
 /**
- * Demo CLI showcasing blic features
+ * Demo CLI showcasing boune features
  */
-import { cli, command, color, createSpinner } from "../packages/blic/src/index.ts";
-import { text, confirm, select } from "../packages/blic/src/prompt/index.ts";
+import { cli, command, color, createSpinner } from "../packages/boune/src/index.ts";
+import { text, confirm, select } from "../packages/boune/src/prompt/index.ts";
 
 // Greet command with argument and options
 const greet = command("greet")
@@ -87,7 +87,7 @@ const init = command("init")
 // Create the CLI
 cli("demo")
   .version("1.0.0")
-  .description("A demo CLI built with blic")
+  .description("A demo CLI built with boune")
   .command(greet)
   .command(build)
   .command(init)

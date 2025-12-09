@@ -1,5 +1,5 @@
 {
-  "name": "blic-monorepo",
+  "name": "boune-monorepo",
   "private": true,
   "type": "module",
   "workspaces": [

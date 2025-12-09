@@ -1,4 +1,4 @@
-# blic
+# boune
 
 A modern CLI framework for [Bun](https://bun.sh).
 
@@ -18,13 +18,13 @@ A modern CLI framework for [Bun](https://bun.sh).
 ## Installation
 
 ```bash
-bun add blic
+bun add boune
 ```
 
 ## Quick Start
 
 ```ts
-import { cli, command } from "blic";
+import { cli, command } from "boune";
 
 const greet = command("greet")
   .description("Greet someone")
@@ -133,7 +133,7 @@ cli("my-app")
 ## Interactive Prompts
 
 ```ts
-import { text, confirm, select } from "blic/prompt";
+import { text, confirm, select } from "boune/prompt";
 
 const name = await text({
   message: "Project name:",
@@ -158,7 +158,7 @@ const framework = await select({
 ## Output Utilities
 
 ```ts
-import { color, createSpinner, table } from "blic";
+import { color, createSpinner, table } from "boune";
 
 // Colors
 console.log(color.green("Success!"));

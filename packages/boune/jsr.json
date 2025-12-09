@@ -1,5 +1,5 @@
 {
-  "name": "@blic/cli",
+  "name": "@boune/cli",
   "version": "0.1.0",
   "description": "A batteries-included CLI framework for Bun — prompts, colors, spinners, and more",
   "exports": {

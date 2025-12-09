@@ -21,5 +21,5 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
   },
-  "references": [{ "path": "./packages/blic" }],
+  "references": [{ "path": "./packages/boune" }],
 }

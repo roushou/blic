@@ -1,5 +1,5 @@
 {
-  "name": "blic",
+  "name": "boune",
   "version": "0.1.0",
   "type": "module",
   "description": "A batteries-included CLI framework for Bun — prompts, colors, spinners, and more",
@@ -7,12 +7,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/roushou/blic.git",
-    "directory": "packages/blic"
+    "url": "git+https://github.com/roushou/boune.git",
+    "directory": "packages/boune"
   },
-  "homepage": "https://github.com/roushou/blic#readme",
+  "homepage": "https://github.com/roushou/boune#readme",
   "bugs": {
-    "url": "https://github.com/roushou/blic/issues"
+    "url": "https://github.com/roushou/boune/issues"
   },
   "exports": {
     ".": "./src/index.ts",

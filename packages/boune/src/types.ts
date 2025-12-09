@@ -1,5 +1,5 @@
 /**
- * Core types for the blic CLI framework
+ * Core types for the boune CLI framework
  */
 
 /** Supported argument types */

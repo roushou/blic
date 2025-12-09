@@ -3,7 +3,7 @@
 /**
  * Example demonstrating hooks and middleware patterns
  */
-import { cli, command, color } from "../packages/blic/src/index.ts";
+import { cli, command, color } from "../packages/boune/src/index.ts";
 
 // Timing middleware
 let startTime: number;

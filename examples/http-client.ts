@@ -3,7 +3,7 @@
 /**
  * HTTP client CLI demonstrating async operations and environment variables
  */
-import { cli, command, color, createSpinner } from "../packages/blic/src/index.ts";
+import { cli, command, color, createSpinner } from "../packages/boune/src/index.ts";
 
 // GET request
 const get = command("get")

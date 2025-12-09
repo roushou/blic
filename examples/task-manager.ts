@@ -4,8 +4,8 @@
  * Task manager CLI demonstrating SQLite persistence with bun:sqlite
  */
 import { Database } from "bun:sqlite";
-import { cli, command, color, table } from "../packages/blic/src/index.ts";
-import { text, select, confirm } from "../packages/blic/src/prompt/index.ts";
+import { cli, command, color, table } from "../packages/boune/src/index.ts";
+import { text, select, confirm } from "../packages/boune/src/prompt/index.ts";
 
 // Initialize database
 const db = new Database(":memory:");
