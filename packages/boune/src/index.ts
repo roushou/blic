@@ -36,4 +36,5 @@ export {
   success,
   info,
   createSpinner,
+  createProgressBar,
 } from "./output/index.ts";

@@ -3,7 +3,13 @@
 /**
  * Demo CLI showcasing boune features
  */
-import { cli, command, color, createSpinner } from "../packages/boune/src/index.ts";
+import {
+  cli,
+  command,
+  color,
+  createSpinner,
+  createProgressBar,
+} from "../packages/boune/src/index.ts";
 import { text, confirm, select } from "../packages/boune/src/prompt/index.ts";
 
 // Greet command with argument and options
@@ -84,6 +90,25 @@ const init = command("init")
     console.log(`  ${color.green("→")} bun run dev\n`);
   });
 
+// Download command with progress bar
+const download = command("download")
+  .description("Simulate downloading files")
+  .argument("<count>", "Number of files to download", { type: "number" })
+  .action(async ({ args }) => {
+    const count = args.count as number;
+
+    console.log(color.bold(`\nDownloading ${count} files...\n`));
+
+    const progress = createProgressBar("Downloading files", { total: count });
+
+    for (let i = 1; i <= count; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      progress.update(i, `Downloading file ${i}/${count}`);
+    }
+
+    progress.complete(`Downloaded ${count} files`);
+  });
+
 // Create the CLI
 cli("demo")
   .version("1.0.0")
@@ -91,4 +116,5 @@ cli("demo")
   .command(greet)
   .command(build)
   .command(init)
+  .command(download)
   .run();
