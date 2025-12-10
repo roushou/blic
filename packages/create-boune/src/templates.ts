@@ -56,11 +56,10 @@ import { cli, command, color } from "boune";
 
 const greet = command("greet")
   .description("Greet someone")
-  .argument("<name>", "Name to greet")
-  .option("-l, --loud", "Shout the greeting")
+  .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
+  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
   .action(({ args, options }) => {
-    const name = args.name as string;
-    const msg = \`Hello, \${name}!\`;
+    const msg = \`Hello, \${args.name}!\`;
     console.log(options.loud ? color.bold(msg.toUpperCase()) : msg);
   });
 
@@ -175,15 +174,12 @@ cli("${name}")
 
 export const greet = command("greet")
   .description("Greet someone")
-  .argument("<name>", "Name to greet")
-  .option("-l, --loud", "Shout the greeting")
-  .option("-t, --times <number>", "Repeat the greeting", { type: "number", default: 1 })
+  .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
+  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
+  .option({ name: "times", short: "t", kind: "number", default: 1, description: "Repeat the greeting" })
   .action(({ args, options }) => {
-    const name = args.name as string;
-    const times = options.times as number;
-
-    for (let i = 0; i < times; i++) {
-      const msg = \`Hello, \${name}!\`;
+    for (let i = 0; i < options.times; i++) {
+      const msg = \`Hello, \${args.name}!\`;
       console.log(options.loud ? color.bold(msg.toUpperCase()) : msg);
     }
   });

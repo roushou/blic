@@ -28,8 +28,8 @@ import { cli, command } from "boune";
 
 const greet = command("greet")
   .description("Greet someone")
-  .argument("<name>", "Name to greet")
-  .option("-l, --loud", "Shout the greeting")
+  .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
+  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
   .action(({ args, options }) => {
     const msg = `Hello, ${args.name}!`;
     console.log(options.loud ? msg.toUpperCase() : msg);
@@ -59,41 +59,89 @@ Options:
 
 ## Arguments
 
+Arguments are positional values passed to commands.
+
 ```ts
 // Required argument
-command("greet").argument("<name>", "Name to greet");
+command("greet").argument({
+  name: "name",
+  kind: "string",
+  required: true,
+  description: "Name to greet",
+});
 
 // Optional argument with default
-command("greet").argument("[name]", "Name", { default: "World" });
+command("greet").argument({
+  name: "name",
+  kind: "string",
+  default: "World",
+  description: "Name to greet",
+});
 
 // Variadic argument (collects remaining args)
-command("cat").argument("<files...>", "Files to concatenate");
+command("cat").argument({
+  name: "files",
+  kind: "string",
+  required: true,
+  variadic: true,
+  description: "Files to concatenate",
+});
 
 // Typed argument
-command("repeat").argument("<count>", "Times to repeat", { type: "number" });
+command("repeat").argument({
+  name: "count",
+  kind: "number",
+  required: true,
+  description: "Times to repeat",
+});
 ```
 
-## Options
+## Flags and Options
+
+Use `.flag()` for boolean toggles and `.option()` for values.
 
 ```ts
-// Boolean flag
-command("build").option("-v, --verbose", "Verbose output");
+// Boolean flag (no value)
+command("build").flag({
+  name: "verbose",
+  short: "v",
+  description: "Verbose output",
+});
 
-// Option with value
-command("build").option("-o, --output <dir>", "Output directory");
+// Option with string value
+command("build").option({
+  name: "output",
+  short: "o",
+  kind: "string",
+  description: "Output directory",
+});
 
-// Typed option with default
-command("serve").option("-p, --port <number>", "Port", {
-  type: "number",
+// Option with default (type is inferred as always present)
+command("serve").option({
+  name: "port",
+  short: "p",
+  kind: "number",
   default: 3000,
+  description: "Port to listen on",
 });
 
 // Environment variable fallback
-command("deploy").option("--token <string>", "API token", {
-  env: "API_TOKEN",
+command("deploy").option({
+  name: "token",
+  kind: "string",
   required: true,
+  env: "API_TOKEN",
+  description: "API token",
 });
 ```
+
+### Flag vs Option
+
+|       | `.flag()`          | `.option()`         |
+| ----- | ------------------ | ------------------- |
+| Value | No value (boolean) | Takes a value       |
+| Type  | Always `boolean`   | Specify with `kind` |
+| Usage | `--verbose`, `-v`  | `--port 8080`       |
 
 ## Subcommands
 
