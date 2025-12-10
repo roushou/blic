@@ -50,3 +50,7 @@ export type {
   NumberValidator,
   BooleanValidator,
 } from "./validation/index.ts";
+
+// Suggestions
+export { suggestCommands, formatSuggestions, levenshtein } from "./suggest.ts";
+export type { Suggestion } from "./suggest.ts";

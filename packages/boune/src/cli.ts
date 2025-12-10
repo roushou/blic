@@ -14,6 +14,7 @@ import { parseArguments, parseOptions, tokenize } from "./parser/index.ts";
 import { generateCliHelp, generateCommandHelp } from "./output/help.ts";
 import { error as formatError } from "./output/format.ts";
 import { closeStdin } from "./prompt/stdin.ts";
+import { suggestCommands, formatSuggestions } from "./suggest.ts";
 
 /**
  * Main CLI builder class
@@ -202,6 +203,7 @@ export class Cli {
     // Extract command path from remaining tokens
     const commandPath: string[] = [];
     const argTokens: typeof remaining = [];
+    let firstUnknownArg: string | null = null;
 
     for (const token of remaining) {
       if (token.type === "argument" && commandPath.length === 0) {
@@ -212,6 +214,9 @@ export class Cli {
           // Check for subcommands
           let currentCmd = potentialCmd;
           continue;
+        } else if (firstUnknownArg === null) {
+          // Track first argument that could be an unknown command
+          firstUnknownArg = token.value;
         }
       }
 
@@ -238,7 +243,16 @@ export class Cli {
 
     // No command specified
     if (commandPath.length === 0) {
-      // Check if there's a default command or show help
+      // Check if first argument looks like an unknown command
+      if (firstUnknownArg) {
+        const suggestions = suggestCommands(firstUnknownArg, this.config.commands);
+        console.error(formatError(`Unknown command: ${firstUnknownArg}`));
+        if (suggestions.length > 0) {
+          console.error(formatSuggestions(suggestions));
+        }
+        process.exit(1);
+      }
+      // Show help
       console.log(generateCliHelp(this.config));
       return;
     }
@@ -246,7 +260,12 @@ export class Cli {
     // Find the command
     const result = this.findCommand(commandPath);
     if (!result) {
+      const input = commandPath[0] ?? "";
+      const suggestions = suggestCommands(input, this.config.commands);
       console.error(formatError(`Unknown command: ${commandPath.join(" ")}`));
+      if (suggestions.length > 0) {
+        console.error(formatSuggestions(suggestions));
+      }
       process.exit(1);
     }
 
