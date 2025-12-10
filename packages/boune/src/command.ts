@@ -1,72 +1,20 @@
 import type {
   ActionHandler,
-  ArgumentConfig,
   ArgumentDef,
-  ArgumentType,
+  ArgumentOptions,
   CommandConfig,
-  ExtractArgName,
-  ExtractOptionName,
+  FlagOptions,
   HookHandler,
   HookType,
-  InferOptionType,
-  IsArgRequired,
-  IsArgVariadic,
-  MapArgType,
-  OptionConfig,
+  InferArgValue,
+  InferKind,
+  InferOptionValue,
+  Kind,
   OptionDef,
-  OptionHasValue,
+  OptionOptions,
   ParsedArgs,
   ParsedOptions,
 } from "./types.ts";
-
-/**
- * Parse argument syntax like "<name>" or "[name]" or "<files...>"
- */
-function parseArgumentSyntax(syntax: string): Pick<ArgumentDef, "name" | "required" | "variadic"> {
-  // Check for variadic inside brackets: <files...> or [files...]
-  const isRequired = syntax.startsWith("<");
-  const isOptional = syntax.startsWith("[");
-
-  // Remove brackets
-  let inner = syntax;
-  if (isRequired && syntax.endsWith(">")) {
-    inner = syntax.slice(1, -1);
-  } else if (isOptional && syntax.endsWith("]")) {
-    inner = syntax.slice(1, -1);
-  }
-
-  // Check for variadic
-  const variadic = inner.endsWith("...");
-  const name = variadic ? inner.slice(0, -3) : inner;
-
-  return {
-    name,
-    required: isRequired,
-    variadic,
-  };
-}
-
-/**
- * Parse option syntax like "-v, --verbose" or "--name <value>"
- */
-function parseOptionSyntax(syntax: string): Pick<OptionDef, "name" | "short" | "type"> {
-  const parts = syntax.split(/[,\s]+/).filter(Boolean);
-  let name = "";
-  let short: string | undefined;
-  let type: ArgumentType = "boolean";
-
-  for (const part of parts) {
-    if (part.startsWith("--")) {
-      name = part.slice(2);
-    } else if (part.startsWith("-") && part.length === 2) {
-      short = part.slice(1);
-    } else if (part.startsWith("<") || part.startsWith("[")) {
-      type = "string";
-    }
-  }
-
-  return { name, short, type };
-}
 
 /**
  * Fluent command builder with full type inference
@@ -108,70 +56,84 @@ export class Command<
 
   /**
    * Add a positional argument
-   * @param syntax - Argument syntax like "<name>" (required) or "[name]" (optional) or "<files...>" (variadic)
-   * @param description - Argument description
-   * @param options - Additional options
    */
-  argument<TSyntax extends string, TType extends ArgumentType = "string">(
-    syntax: TSyntax,
-    description: string,
-    options?: ArgumentConfig<TType>,
+  argument<
+    TName extends string,
+    TKind extends Kind,
+    TRequired extends boolean = false,
+    TVariadic extends boolean = false,
+    TDefault extends InferKind<TKind, TVariadic> | undefined = undefined,
+  >(
+    options: ArgumentOptions<TName, TKind, TRequired, TVariadic> & { default?: TDefault },
   ): Command<
     TArgs & {
-      [K in ExtractArgName<TSyntax>]: IsArgRequired<TSyntax> extends true
-        ? MapArgType<TType, IsArgVariadic<TSyntax>>
-        : MapArgType<TType, IsArgVariadic<TSyntax>> | undefined;
+      [K in TName]: InferArgValue<TKind, TRequired, TVariadic, TDefault>;
     },
     TOpts
   > {
-    const parsed = parseArgumentSyntax(syntax);
-    this.config.arguments.push({
-      ...parsed,
-      description,
-      type: options?.type ?? "string",
-      default: options?.default,
-      validate: options?.validate,
-    });
+    const def: ArgumentDef = {
+      name: options.name,
+      description: options.description ?? "",
+      required: options.required ?? false,
+      type: options.kind,
+      default: options.default,
+      variadic: options.variadic ?? false,
+      validate: options.validate,
+    };
+    this.config.arguments.push(def);
     return this as unknown as Command<
       TArgs & {
-        [K in ExtractArgName<TSyntax>]: IsArgRequired<TSyntax> extends true
-          ? MapArgType<TType, IsArgVariadic<TSyntax>>
-          : MapArgType<TType, IsArgVariadic<TSyntax>> | undefined;
+        [K in TName]: InferArgValue<TKind, TRequired, TVariadic, TDefault>;
       },
       TOpts
     >;
   }
 
   /**
-   * Add an option/flag
-   * @param syntax - Option syntax like "-v, --verbose" or "-n, --name <value>"
-   * @param description - Option description
-   * @param options - Additional options
+   * Add a boolean flag (no value)
+   */
+  flag<TName extends string>(
+    options: FlagOptions<TName>,
+  ): Command<TArgs, TOpts & { [K in TName]: boolean }> {
+    const def: OptionDef = {
+      name: options.name,
+      short: options.short,
+      long: options.long ?? options.name,
+      description: options.description ?? "",
+      type: "boolean",
+      required: false,
+      default: false,
+    };
+    this.config.options.push(def);
+    return this as unknown as Command<TArgs, TOpts & { [K in TName]: boolean }>;
+  }
+
+  /**
+   * Add an option with a value
    */
   option<
-    TSyntax extends string,
-    TType extends ArgumentType = OptionHasValue<TSyntax> extends true ? "string" : "boolean",
+    TName extends string,
+    TKind extends Kind,
+    TRequired extends boolean = false,
+    TDefault extends InferKind<TKind> | undefined = undefined,
   >(
-    syntax: TSyntax,
-    description: string,
-    options?: OptionConfig<TType>,
-  ): Command<
-    TArgs,
-    TOpts & { [K in ExtractOptionName<TSyntax>]: InferOptionType<OptionHasValue<TSyntax>, TType> }
-  > {
-    const parsed = parseOptionSyntax(syntax);
-    this.config.options.push({
-      ...parsed,
-      description,
-      type: options?.type ?? parsed.type,
-      default: options?.default,
-      required: options?.required ?? false,
-      env: options?.env,
-      validate: options?.validate,
-    });
+    options: OptionOptions<TName, TKind, TRequired, TDefault> & { default?: TDefault },
+  ): Command<TArgs, TOpts & { [K in TName]: InferOptionValue<TKind, TRequired, TDefault> }> {
+    const def: OptionDef = {
+      name: options.name,
+      short: options.short,
+      long: options.long ?? options.name,
+      description: options.description ?? "",
+      type: options.kind,
+      required: options.required ?? false,
+      default: options.default,
+      env: options.env,
+      validate: options.validate,
+    };
+    this.config.options.push(def);
     return this as unknown as Command<
       TArgs,
-      TOpts & { [K in ExtractOptionName<TSyntax>]: InferOptionType<OptionHasValue<TSyntax>, TType> }
+      TOpts & { [K in TName]: InferOptionValue<TKind, TRequired, TDefault> }
     >;
   }
 

@@ -87,17 +87,19 @@ function formatZshOption(opt: OptionDef): string {
     .replace(/\]/g, "\\]");
   const takesArg = opt.type !== "boolean";
 
+  const longFlag = opt.long ?? opt.name;
+
   if (opt.short) {
     if (takesArg) {
-      return `'(-${opt.short} --${opt.name})'{-${opt.short},--${opt.name}}'[${desc}]:value'`;
+      return `'(-${opt.short} --${longFlag})'{-${opt.short},--${longFlag}}'[${desc}]:value'`;
     }
-    return `'(-${opt.short} --${opt.name})'{-${opt.short},--${opt.name}}'[${desc}]'`;
+    return `'(-${opt.short} --${longFlag})'{-${opt.short},--${longFlag}}'[${desc}]'`;
   }
 
   if (takesArg) {
-    return `'--${opt.name}[${desc}]:value'`;
+    return `'--${longFlag}[${desc}]:value'`;
   }
-  return `'--${opt.name}[${desc}]'`;
+  return `'--${longFlag}[${desc}]'`;
 }
 
 function getVisibleCommands(commands: Map<string, CommandConfig>): CommandConfig[] {

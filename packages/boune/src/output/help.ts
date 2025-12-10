@@ -15,7 +15,8 @@ function formatArgument(arg: { name: string; required: boolean; variadic?: boole
 function formatOption(opt: OptionDef): string {
   const parts: string[] = [];
   if (opt.short) parts.push(`-${opt.short}`);
-  parts.push(`--${opt.name}`);
+  const longFlag = opt.long ?? opt.name;
+  parts.push(`--${longFlag}`);
   if (opt.type !== "boolean") {
     parts[parts.length - 1] += ` <${opt.type}>`;
   }

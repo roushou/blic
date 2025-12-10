@@ -2,12 +2,18 @@ import type { OptionDef, ParsedOptions, Token, ValidationError } from "../types.
 import { coerceValue } from "./args.ts";
 
 /**
- * Build a lookup map for options by name and short flag
+ * Build a lookup map for options by long flag, short flag, and name
  */
 function buildOptionMap(definitions: OptionDef[]): Map<string, OptionDef> {
   const map = new Map<string, OptionDef>();
   for (const def of definitions) {
+    // Map by long flag (primary lookup for --option)
+    if (def.long) {
+      map.set(def.long, def);
+    }
+    // Map by name as fallback (for backward compatibility)
     map.set(def.name, def);
+    // Map by short flag
     if (def.short) {
       map.set(def.short, def);
     }

@@ -8,11 +8,16 @@ import { cli, command, color, createSpinner } from "../packages/boune/src/index.
 // GET request
 const get = command("get")
   .description("Make a GET request")
-  .argument("<url>", "URL to fetch")
-  .option("-H, --header <header>", "Add header (can be repeated)")
-  .option("-o, --output <file>", "Write response to file")
-  .option("-v, --verbose", "Show response headers")
-  .option("--json", "Parse response as JSON")
+  .argument({ name: "url", kind: "string", required: true, description: "URL to fetch" })
+  .option({
+    name: "header",
+    short: "H",
+    kind: "string",
+    description: "Add header (can be repeated)",
+  })
+  .option({ name: "output", short: "o", kind: "string", description: "Write response to file" })
+  .flag({ name: "verbose", short: "v", description: "Show response headers" })
+  .flag({ name: "json", description: "Parse response as JSON" })
   .action(async ({ args, options }) => {
     const spinner = createSpinner(`GET ${args.url}`).start();
 
@@ -56,12 +61,18 @@ const get = command("get")
 // POST request
 const post = command("post")
   .description("Make a POST request")
-  .argument("<url>", "URL to post to")
-  .option("-d, --data <data>", "Request body data")
-  .option("-f, --file <file>", "Read body from file")
-  .option("-H, --header <header>", "Add header")
-  .option("-t, --content-type <type>", "Content-Type header", { default: "application/json" })
-  .option("-v, --verbose", "Show response headers")
+  .argument({ name: "url", kind: "string", required: true, description: "URL to post to" })
+  .option({ name: "data", short: "d", kind: "string", description: "Request body data" })
+  .option({ name: "file", short: "f", kind: "string", description: "Read body from file" })
+  .option({ name: "header", short: "H", kind: "string", description: "Add header" })
+  .option({
+    name: "contentType",
+    short: "t",
+    kind: "string",
+    default: "application/json",
+    description: "Content-Type header",
+  })
+  .flag({ name: "verbose", short: "v", description: "Show response headers" })
   .action(async ({ args, options }) => {
     const spinner = createSpinner(`POST ${args.url}`).start();
 
@@ -77,7 +88,7 @@ const post = command("post")
       }
 
       const headers: Record<string, string> = {
-        "Content-Type": options["content-type"],
+        "Content-Type": options.contentType,
       };
       if (options.header) {
         const [key, value] = options.header.split(":");
@@ -115,7 +126,7 @@ const post = command("post")
 // HEAD request
 const head = command("head")
   .description("Make a HEAD request (headers only)")
-  .argument("<url>", "URL to check")
+  .argument({ name: "url", kind: "string", required: true, description: "URL to check" })
   .action(async ({ args }) => {
     const spinner = createSpinner(`HEAD ${args.url}`).start();
 
@@ -137,9 +148,9 @@ const head = command("head")
 const download = command("download")
   .description("Download a file")
   .alias("dl")
-  .argument("<url>", "URL to download")
-  .argument("[output]", "Output filename")
-  .option("-q, --quiet", "Suppress progress output")
+  .argument({ name: "url", kind: "string", required: true, description: "URL to download" })
+  .argument({ name: "output", kind: "string", description: "Output filename" })
+  .flag({ name: "quiet", short: "q", description: "Suppress progress output" })
   .action(async ({ args, options }) => {
     const output = args.output || args.url.split("/").pop() || "download";
 
@@ -186,10 +197,17 @@ function formatSize(bytes: number): string {
 cli("http")
   .version("1.0.0")
   .description("HTTP client CLI")
-  .option("--base-url <url>", "Base URL for requests", { env: "HTTP_BASE_URL" })
-  .option("--timeout <ms>", "Request timeout", {
-    type: "number",
+  .option({
+    name: "baseUrl",
+    kind: "string",
+    description: "Base URL for requests",
+    env: "HTTP_BASE_URL",
+  })
+  .option({
+    name: "timeout",
+    kind: "number",
     default: 30000,
+    description: "Request timeout",
     env: "HTTP_TIMEOUT",
   })
   .command(get)

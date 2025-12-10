@@ -17,9 +17,15 @@ import { text, confirm, select } from "../packages/boune/src/prompt/index.ts";
 // Greet command with argument and options
 const greet = command("greet")
   .description("Greet someone")
-  .argument("<name>", "Name to greet")
-  .option("-l, --loud", "Shout the greeting")
-  .option("-t, --times <number>", "Number of times to greet", { type: "number", default: 1 })
+  .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
+  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
+  .option({
+    name: "times",
+    short: "t",
+    kind: "number",
+    default: 1,
+    description: "Number of times to greet",
+  })
   .action(({ args, options }) => {
     for (let i = 0; i < options.times; i++) {
       const msg = `Hello, ${args.name}!`;
@@ -30,7 +36,7 @@ const greet = command("greet")
 // Build command with subcommands
 const buildWatch = command("watch")
   .description("Watch for changes and rebuild")
-  .option("-p, --poll", "Use polling instead of native watchers")
+  .flag({ name: "poll", short: "p", description: "Use polling instead of native watchers" })
   .action(({ options }) => {
     console.log(color.cyan("Watching for changes..."));
     console.log(`Polling: ${options.poll ? "yes" : "no"}`);
@@ -39,9 +45,15 @@ const buildWatch = command("watch")
 const build = command("build")
   .description("Build the project")
   .alias("b")
-  .argument("<entry>", "Entry file")
-  .option("-o, --output <dir>", "Output directory", { default: "dist" })
-  .option("-m, --minify", "Minify output")
+  .argument({ name: "entry", kind: "string", required: true, description: "Entry file" })
+  .option({
+    name: "output",
+    short: "o",
+    kind: "string",
+    default: "dist",
+    description: "Output directory",
+  })
+  .flag({ name: "minify", short: "m", description: "Minify output" })
   .subcommand(buildWatch)
   .action(({ args, options }) => {
     console.log(color.bold("Building project..."));
@@ -91,19 +103,28 @@ const init = command("init")
 // Serve command with validation
 const serve = command("serve")
   .description("Start a development server")
-  .option("-p, --port <port>", "Port to listen on", {
-    type: "number",
+  .option({
+    name: "port",
+    short: "p",
+    kind: "number",
     default: 3000,
+    description: "Port to listen on",
     validate: v.number().integer().min(1).max(65535),
   })
-  .option("-H, --host <host>", "Host to bind to", {
-    type: "string",
+  .option({
+    name: "host",
+    short: "H",
+    kind: "string",
     default: "localhost",
+    description: "Host to bind to",
     validate: v.string().oneOf(["localhost", "0.0.0.0", "127.0.0.1"]),
   })
-  .option("-e, --env <env>", "Environment", {
-    type: "string",
+  .option({
+    name: "env",
+    short: "e",
+    kind: "string",
     default: "development",
+    description: "Environment",
     validate: v.string().oneOf(["development", "staging", "production"]),
   })
   .action(({ options }) => {
@@ -117,7 +138,12 @@ const serve = command("serve")
 // Download command with progress bar
 const download = command("download")
   .description("Simulate downloading files")
-  .argument("<count>", "Number of files to download", { type: "number" })
+  .argument({
+    name: "count",
+    kind: "number",
+    required: true,
+    description: "Number of files to download",
+  })
   .action(async ({ args }) => {
     console.log(color.bold(`\nDownloading ${args.count} files...\n`));
 
@@ -134,7 +160,12 @@ const download = command("download")
 // Completions command to generate shell completion scripts
 const completions = command("completions")
   .description("Generate shell completion scripts")
-  .argument("<shell>", "Shell type (bash, zsh, fish)")
+  .argument({
+    name: "shell",
+    kind: "string",
+    required: true,
+    description: "Shell type (bash, zsh, fish)",
+  })
   .action(({ args }) => {
     if (!["bash", "zsh", "fish"].includes(args.shell)) {
       console.error(color.red(`Error: Invalid shell "${args.shell}". Use bash, zsh, or fish.`));

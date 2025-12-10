@@ -21,7 +21,12 @@ describe("command builder", () => {
   });
 
   test("adds required argument", () => {
-    const cmd = command("greet").argument("<name>", "Name to greet");
+    const cmd = command("greet").argument({
+      name: "name",
+      kind: "string",
+      required: true,
+      description: "Name to greet",
+    });
     const config = cmd.getConfig();
     expect(config.arguments).toEqual([
       {
@@ -30,12 +35,19 @@ describe("command builder", () => {
         required: true,
         type: "string",
         variadic: false,
+        default: undefined,
+        validate: undefined,
       },
     ]);
   });
 
   test("adds optional argument", () => {
-    const cmd = command("greet").argument("[name]", "Name to greet", { default: "World" });
+    const cmd = command("greet").argument({
+      name: "name",
+      kind: "string",
+      description: "Name to greet",
+      default: "World",
+    });
     const config = cmd.getConfig();
     expect(config.arguments).toEqual([
       {
@@ -45,12 +57,19 @@ describe("command builder", () => {
         type: "string",
         default: "World",
         variadic: false,
+        validate: undefined,
       },
     ]);
   });
 
   test("adds variadic argument", () => {
-    const cmd = command("cat").argument("<files...>", "Files to concatenate");
+    const cmd = command("cat").argument({
+      name: "files",
+      kind: "string",
+      required: true,
+      variadic: true,
+      description: "Files to concatenate",
+    });
     const config = cmd.getConfig();
     expect(config.arguments).toEqual([
       {
@@ -59,41 +78,61 @@ describe("command builder", () => {
         required: true,
         type: "string",
         variadic: true,
+        default: undefined,
+        validate: undefined,
       },
     ]);
   });
 
-  test("adds boolean option", () => {
-    const cmd = command("build").option("-v, --verbose", "Verbose output");
+  test("adds boolean flag", () => {
+    const cmd = command("build").flag({
+      name: "verbose",
+      short: "v",
+      description: "Verbose output",
+    });
     const config = cmd.getConfig();
     expect(config.options).toEqual([
       {
         name: "verbose",
         short: "v",
+        long: "verbose",
         description: "Verbose output",
         type: "boolean",
         required: false,
+        default: false,
       },
     ]);
   });
 
   test("adds string option", () => {
-    const cmd = command("build").option("-o, --output <dir>", "Output directory");
+    const cmd = command("build").option({
+      name: "output",
+      short: "o",
+      kind: "string",
+      description: "Output directory",
+    });
     const config = cmd.getConfig();
     expect(config.options).toEqual([
       {
         name: "output",
         short: "o",
+        long: "output",
         description: "Output directory",
         type: "string",
         required: false,
+        default: undefined,
+        env: undefined,
+        validate: undefined,
       },
     ]);
   });
 
   test("adds option with env var", () => {
-    const cmd = command("serve").option("-p, --port <number>", "Port", {
-      type: "number",
+    const cmd = command("serve").option({
+      name: "port",
+      short: "p",
+      kind: "number",
+      description: "Port",
       env: "PORT",
       default: 3000,
     });
@@ -102,11 +141,13 @@ describe("command builder", () => {
       {
         name: "port",
         short: "p",
+        long: "port",
         description: "Port",
         type: "number",
         required: false,
         env: "PORT",
         default: 3000,
+        validate: undefined,
       },
     ]);
   });
@@ -142,9 +183,9 @@ describe("command builder", () => {
     const cmd = command("build")
       .description("Build the project")
       .alias("b")
-      .argument("<entry>", "Entry file")
-      .option("-o, --output <dir>", "Output directory")
-      .option("-w, --watch", "Watch mode")
+      .argument({ name: "entry", kind: "string", required: true, description: "Entry file" })
+      .option({ name: "output", short: "o", kind: "string", description: "Output directory" })
+      .flag({ name: "watch", short: "w", description: "Watch mode" })
       .action(({ args, options }) => {
         console.log(args, options);
       });

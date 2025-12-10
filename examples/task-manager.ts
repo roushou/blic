@@ -42,9 +42,9 @@ interface Task {
 const list = command("list")
   .description("List all tasks")
   .alias("ls")
-  .option("-s, --status <status>", "Filter by status")
-  .option("-p, --priority <priority>", "Filter by priority")
-  .option("--all", "Show all tasks including done")
+  .option({ name: "status", short: "s", kind: "string", description: "Filter by status" })
+  .option({ name: "priority", short: "p", kind: "string", description: "Filter by priority" })
+  .flag({ name: "all", description: "Show all tasks including done" })
   .action(({ options }) => {
     let query = "SELECT * FROM tasks";
     const conditions: string[] = [];
@@ -88,8 +88,14 @@ const list = command("list")
 // Add task
 const add = command("add")
   .description("Add a new task")
-  .argument("[title]", "Task title")
-  .option("-p, --priority <level>", "Priority level (low, medium, high)", { default: "medium" })
+  .argument({ name: "title", kind: "string", description: "Task title" })
+  .option({
+    name: "priority",
+    short: "p",
+    kind: "string",
+    default: "medium",
+    description: "Priority level (low, medium, high)",
+  })
   .action(async ({ args, options }) => {
     let title = args.title;
 
@@ -119,7 +125,7 @@ const add = command("add")
 // Update task status
 const done = command("done")
   .description("Mark task as done")
-  .argument("<id>", "Task ID", { type: "number" })
+  .argument({ name: "id", kind: "number", required: true, description: "Task ID" })
   .action(({ args }) => {
     const result = db.run("UPDATE tasks SET status = 'done' WHERE id = ?", [args.id]);
 
@@ -133,7 +139,7 @@ const done = command("done")
 // Start working on task
 const start = command("start")
   .description("Mark task as in-progress")
-  .argument("<id>", "Task ID", { type: "number" })
+  .argument({ name: "id", kind: "number", required: true, description: "Task ID" })
   .action(({ args }) => {
     const result = db.run("UPDATE tasks SET status = 'in-progress' WHERE id = ?", [args.id]);
 
@@ -148,8 +154,8 @@ const start = command("start")
 const remove = command("remove")
   .description("Remove a task")
   .alias("rm")
-  .argument("<id>", "Task ID", { type: "number" })
-  .option("-f, --force", "Skip confirmation")
+  .argument({ name: "id", kind: "number", required: true, description: "Task ID" })
+  .flag({ name: "force", short: "f", description: "Skip confirmation" })
   .action(async ({ args, options }) => {
     const task = db.query("SELECT * FROM tasks WHERE id = ?").get(args.id) as Task | null;
     if (!task) {
@@ -175,7 +181,7 @@ const remove = command("remove")
 // Clear completed tasks
 const clear = command("clear")
   .description("Remove all completed tasks")
-  .option("-f, --force", "Skip confirmation")
+  .flag({ name: "force", short: "f", description: "Skip confirmation" })
   .action(async ({ options }) => {
     const count = (
       db.query("SELECT COUNT(*) as count FROM tasks WHERE status = 'done'").get() as {

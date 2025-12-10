@@ -79,7 +79,8 @@ export function generateBashCompletion(config: CliConfig): string {
 function formatBashOption(opt: OptionDef): string {
   const parts: string[] = [];
   if (opt.short) parts.push(`-${opt.short}`);
-  parts.push(`--${opt.name}`);
+  const longFlag = opt.long ?? opt.name;
+  parts.push(`--${longFlag}`);
   return parts.join(" ");
 }
 

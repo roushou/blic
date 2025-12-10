@@ -50,7 +50,7 @@ describe("cli builder", () => {
   test("passes parsed args to action", async () => {
     let receivedContext: any;
     const cmd = command("greet")
-      .argument("<name>", "Name")
+      .argument({ name: "name", kind: "string", required: true, description: "Name" })
       .action((ctx) => {
         receivedContext = ctx;
       });
@@ -64,7 +64,7 @@ describe("cli builder", () => {
   test("passes parsed options to action", async () => {
     let receivedContext: any;
     const cmd = command("serve")
-      .option("-p, --port <number>", "Port", { type: "number", default: 3000 })
+      .option({ name: "port", short: "p", kind: "number", default: 3000, description: "Port" })
       .action((ctx) => {
         receivedContext = ctx;
       });

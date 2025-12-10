@@ -1,10 +1,12 @@
 import type {
-  ArgumentType,
   CliConfig,
   CommandConfig,
+  FlagOptions,
   HookHandler,
   HookType,
+  Kind,
   OptionDef,
+  OptionOptions,
   ParsedArgs,
   ParsedOptions,
   ValidationError,
@@ -33,6 +35,7 @@ export class Cli {
         {
           name: "help",
           short: "h",
+          long: "help",
           description: "Show help",
           type: "boolean",
           required: false,
@@ -52,6 +55,7 @@ export class Cli {
     this.config.globalOptions.push({
       name: "version",
       short: "V",
+      long: "version",
       description: "Show version",
       type: "boolean",
       required: false,
@@ -81,21 +85,35 @@ export class Cli {
   }
 
   /**
-   * Add a global option
+   * Add a global boolean flag
    */
-  option(
-    syntax: string,
-    description: string,
-    options?: { type?: ArgumentType; default?: unknown; required?: boolean; env?: string },
-  ): this {
-    const parsed = this.parseOptionSyntax(syntax);
+  flag(options: FlagOptions): this {
     this.config.globalOptions.push({
-      ...parsed,
-      description,
-      type: options?.type ?? parsed.type,
-      default: options?.default,
-      required: options?.required ?? false,
-      env: options?.env,
+      name: options.name,
+      short: options.short,
+      long: options.long ?? options.name,
+      description: options.description ?? "",
+      type: "boolean",
+      required: false,
+      default: false,
+    });
+    return this;
+  }
+
+  /**
+   * Add a global option with a value
+   */
+  option<TKind extends Kind>(options: OptionOptions<string, TKind>): this {
+    this.config.globalOptions.push({
+      name: options.name,
+      short: options.short,
+      long: options.long ?? options.name,
+      description: options.description ?? "",
+      type: options.kind,
+      required: options.required ?? false,
+      default: options.default,
+      env: options.env,
+      validate: options.validate,
     });
     return this;
   }
@@ -122,28 +140,6 @@ export class Cli {
    */
   getConfig(): CliConfig {
     return this.config;
-  }
-
-  /**
-   * Parse option syntax
-   */
-  private parseOptionSyntax(syntax: string): Pick<OptionDef, "name" | "short" | "type"> {
-    const parts = syntax.split(/[,\s]+/).filter(Boolean);
-    let name = "";
-    let short: string | undefined;
-    let type: ArgumentType = "boolean";
-
-    for (const part of parts) {
-      if (part.startsWith("--")) {
-        name = part.slice(2);
-      } else if (part.startsWith("-") && part.length === 2) {
-        short = part.slice(1);
-      } else if (part.startsWith("<") || part.startsWith("[")) {
-        type = "string";
-      }
-    }
-
-    return { name, short, type };
   }
 
   /**

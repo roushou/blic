@@ -26,9 +26,14 @@ const timedCli = cli("hooks-demo")
 // Command with its own hooks
 const deploy = command("deploy")
   .description("Deploy the application")
-  .argument("<env>", "Environment (staging, production)")
-  .option("-f, --force", "Skip confirmation")
-  .option("--dry-run", "Show what would be deployed")
+  .argument({
+    name: "env",
+    kind: "string",
+    required: true,
+    description: "Environment (staging, production)",
+  })
+  .flag({ name: "force", short: "f", description: "Skip confirmation" })
+  .flag({ name: "dryRun", long: "dry-run", description: "Show what would be deployed" })
   .hook("preAction", ({ args }) => {
     if (args.env === "production") {
       console.log(color.yellow("⚠️  Deploying to PRODUCTION"));
@@ -38,7 +43,7 @@ const deploy = command("deploy")
     console.log(color.green("✓ Deployment hooks completed"));
   })
   .action(async ({ args, options }) => {
-    if (options["dry-run"]) {
+    if (options.dryRun) {
       console.log(color.cyan(`[DRY RUN] Would deploy to ${args.env}`));
       return;
     }
@@ -66,7 +71,7 @@ const fail = command("fail")
 // Simple command to show hooks
 const hello = command("hello")
   .description("Simple hello command")
-  .argument("[name]", "Name to greet", { default: "World" })
+  .argument({ name: "name", kind: "string", default: "World", description: "Name to greet" })
   .action(({ args }) => {
     console.log(`Hello, ${args.name}!`);
   });

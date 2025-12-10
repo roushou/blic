@@ -90,7 +90,8 @@ function formatFishOption(cliName: string, opt: OptionDef, condition?: string): 
     parts.push(`-s ${opt.short}`);
   }
 
-  parts.push(`-l ${opt.name}`);
+  const longFlag = opt.long ?? opt.name;
+  parts.push(`-l ${longFlag}`);
 
   if (opt.type !== "boolean") {
     parts.push("-r"); // requires argument

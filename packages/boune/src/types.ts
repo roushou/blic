@@ -4,64 +4,15 @@
 
 import type { AnyValidator } from "./validation/types.ts";
 
-/** Supported argument types */
-export type ArgumentType = "string" | "number" | "boolean";
-
 // ============================================================================
-// Type Extraction Utilities
+// Kind and Type Mapping
 // ============================================================================
 
-/** Extract argument name from syntax: "<name>" | "[name]" | "<files...>" */
-export type ExtractArgName<T extends string> = T extends `<${infer Name}...>`
-  ? Name
-  : T extends `<${infer Name}>`
-    ? Name
-    : T extends `[${infer Name}...]`
-      ? Name
-      : T extends `[${infer Name}]`
-        ? Name
-        : never;
+/** Supported value types */
+export type Kind = "string" | "number" | "boolean";
 
-/** Check if argument is required (starts with <) */
-export type IsArgRequired<T extends string> = T extends `<${string}>` ? true : false;
-
-/** Check if argument is variadic (ends with ...>) */
-export type IsArgVariadic<T extends string> = T extends `${string}...>` | `${string}...]`
-  ? true
-  : false;
-
-/** Extract option name from syntax: "-v, --verbose" | "--name <val>" | "-n <val>" */
-export type ExtractOptionName<T extends string> =
-  // Long form with value: "--name <val>" or "-n, --name <val>"
-  T extends `${string}--${infer Long} <${string}>`
-    ? Long
-    : T extends `${string}--${infer Long} [${string}]`
-      ? Long
-      : // Long form boolean: "--verbose" or "-v, --verbose"
-        T extends `${string}--${infer Long}`
-        ? Long
-        : // Short only with value: "-n <val>"
-          T extends `-${infer Short} <${string}>`
-          ? Short
-          : T extends `-${infer Short} [${string}]`
-            ? Short
-            : // Short only boolean: "-v"
-              T extends `-${infer Short}`
-              ? Short
-              : never;
-
-/** Check if option has a value placeholder */
-export type OptionHasValue<T extends string> = T extends `${string}<${string}>`
-  ? true
-  : T extends `${string}[${string}]`
-    ? true
-    : false;
-
-/** Map ArgumentType string to actual TypeScript type */
-export type MapArgType<
-  T extends ArgumentType,
-  IsVariadic extends boolean = false,
-> = IsVariadic extends true
+/** Map Kind to TypeScript type */
+export type InferKind<T extends Kind, Variadic extends boolean = false> = Variadic extends true
   ? T extends "number"
     ? number[]
     : T extends "boolean"
@@ -73,56 +24,144 @@ export type MapArgType<
       ? boolean
       : string;
 
-/** Infer option type: boolean flags vs string/number values */
-export type InferOptionType<
-  HasValue extends boolean,
-  TType extends ArgumentType,
-> = HasValue extends false ? boolean : MapArgType<TType>;
+// ============================================================================
+// Argument Types
+// ============================================================================
 
-/** Argument config with type parameter for inference */
-export interface ArgumentConfig<TType extends ArgumentType = "string"> {
-  type?: TType;
-  default?: MapArgType<TType>;
+/** Argument configuration options */
+export interface ArgumentOptions<
+  TName extends string = string,
+  TKind extends Kind = Kind,
+  TRequired extends boolean = false,
+  TVariadic extends boolean = false,
+> {
+  /** Argument name (used for access in args object) */
+  name: TName;
+  /** Value type */
+  kind: TKind;
+  /** Whether argument is required (default: false) */
+  required?: TRequired;
+  /** Whether argument accepts multiple values (default: false) */
+  variadic?: TVariadic;
+  /** Description shown in help */
+  description?: string;
+  /** Default value if not provided */
+  default?: InferKind<TKind, TVariadic>;
+  /** Validation function */
   validate?: AnyValidator;
 }
 
-/** Option config with type parameter for inference */
-export interface OptionConfig<TType extends ArgumentType = "string"> {
-  type?: TType;
-  default?: unknown;
-  required?: boolean;
+/** Infer argument value type based on options */
+export type InferArgValue<
+  TKind extends Kind,
+  TRequired extends boolean,
+  TVariadic extends boolean,
+  TDefault,
+> = TDefault extends undefined
+  ? TRequired extends true
+    ? InferKind<TKind, TVariadic>
+    : InferKind<TKind, TVariadic> | undefined
+  : InferKind<TKind, TVariadic>;
+
+// ============================================================================
+// Flag Types (boolean options without values)
+// ============================================================================
+
+/** Flag configuration options */
+export interface FlagOptions<TName extends string = string> {
+  /** Flag name (used for access in options object) */
+  name: TName;
+  /** Short flag (single character, e.g., "v" for -v) */
+  short?: string;
+  /** Long flag (defaults to name if not specified) */
+  long?: string;
+  /** Description shown in help */
+  description?: string;
+}
+
+// ============================================================================
+// Option Types (with values)
+// ============================================================================
+
+/** Option configuration options */
+export interface OptionOptions<
+  TName extends string = string,
+  TKind extends Kind = Kind,
+  TRequired extends boolean = false,
+  TDefault extends InferKind<TKind> | undefined = undefined,
+> {
+  /** Option name (used for access in options object) */
+  name: TName;
+  /** Value type */
+  kind: TKind;
+  /** Short flag (single character, e.g., "c" for -c) */
+  short?: string;
+  /** Long flag (defaults to name if not specified) */
+  long?: string;
+  /** Whether option is required (default: false) */
+  required?: TRequired;
+  /** Description shown in help */
+  description?: string;
+  /** Default value if not provided */
+  default?: TDefault;
+  /** Environment variable to read value from */
   env?: string;
+  /** Validation function */
   validate?: AnyValidator;
 }
 
-/** Argument definition */
+/** Infer option value type based on options (default implies always present) */
+export type InferOptionValue<
+  TKind extends Kind,
+  TRequired extends boolean,
+  TDefault,
+> = TDefault extends undefined
+  ? TRequired extends true
+    ? InferKind<TKind>
+    : InferKind<TKind> | undefined
+  : InferKind<TKind>;
+
+// ============================================================================
+// Internal Definitions (used by parser)
+// ============================================================================
+
+/** Internal argument definition */
 export interface ArgumentDef {
   name: string;
   description: string;
   required: boolean;
-  type: ArgumentType;
+  type: Kind;
   default?: unknown;
   variadic?: boolean;
   validate?: AnyValidator;
 }
 
-/** Option/flag definition */
+/** Internal option/flag definition */
 export interface OptionDef {
   name: string;
   short?: string;
+  long?: string;
   description: string;
-  type: ArgumentType;
+  type: Kind;
   required: boolean;
   default?: unknown;
   env?: string;
   validate?: AnyValidator;
 }
+
+// ============================================================================
+// Parsed Values
+// ============================================================================
 
 /** Parsed argument values */
 export type ParsedArgs = Record<string, unknown>;
 
 /** Parsed option values */
 export type ParsedOptions = Record<string, unknown>;
+
+// ============================================================================
+// Action and Hooks
+// ============================================================================
 
 /** Context passed to command action */
 export interface ActionContext<
@@ -151,6 +190,10 @@ export type HookHandler = (context: {
   error?: Error;
 }) => void | Promise<void>;
 
+// ============================================================================
+// Configuration
+// ============================================================================
+
 /** Command configuration */
 export interface CommandConfig {
   name: string;
@@ -173,6 +216,10 @@ export interface CliConfig {
   globalOptions: OptionDef[];
   hooks: Map<HookType, HookHandler[]>;
 }
+
+// ============================================================================
+// Parser Types
+// ============================================================================
 
 /** Token types from argv parsing */
 export type TokenType = "command" | "argument" | "option" | "value" | "separator";

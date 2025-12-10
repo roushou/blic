@@ -8,9 +8,15 @@ import { cli, command, color } from "../packages/boune/src/index.ts";
 // git add <files...>
 const add = command("add")
   .description("Add file contents to the index")
-  .argument("<files...>", "Files to add")
-  .option("-A, --all", "Add all changes")
-  .option("-p, --patch", "Interactively choose hunks")
+  .argument({
+    name: "files",
+    kind: "string",
+    required: true,
+    variadic: true,
+    description: "Files to add",
+  })
+  .flag({ name: "all", short: "A", description: "Add all changes" })
+  .flag({ name: "patch", short: "p", description: "Interactively choose hunks" })
   .action(({ args, options }) => {
     if (options.all) {
       console.log(color.green("Adding all changes..."));
@@ -25,9 +31,9 @@ const add = command("add")
 // git commit
 const commit = command("commit")
   .description("Record changes to the repository")
-  .option("-m, --message <msg>", "Commit message")
-  .option("-a, --all", "Automatically stage modified files")
-  .option("--amend", "Amend previous commit")
+  .option({ name: "message", short: "m", kind: "string", description: "Commit message" })
+  .flag({ name: "all", short: "a", description: "Automatically stage modified files" })
+  .flag({ name: "amend", description: "Amend previous commit" })
   .action(({ options }) => {
     if (!options.message && !options.amend) {
       console.error(color.red("error: no commit message provided"));
@@ -42,7 +48,7 @@ const commit = command("commit")
 // git status
 const status = command("status")
   .description("Show the working tree status")
-  .option("-s, --short", "Give output in short format")
+  .flag({ name: "short", short: "s", description: "Give output in short format" })
   .action(({ options }) => {
     if (options.short) {
       console.log("M  src/index.ts");
@@ -61,8 +67,14 @@ const status = command("status")
 // git log
 const log = command("log")
   .description("Show commit logs")
-  .option("-n, --max-count <number>", "Limit number of commits", { type: "number", default: 10 })
-  .option("--oneline", "Show each commit on one line")
+  .option({
+    name: "maxCount",
+    short: "n",
+    kind: "number",
+    default: 10,
+    description: "Limit number of commits",
+  })
+  .flag({ name: "oneline", description: "Show each commit on one line" })
   .action(({ options }) => {
     const commits = [
       { hash: "abc1234", msg: "feat: add user authentication", date: "2 hours ago" },
@@ -70,7 +82,7 @@ const log = command("log")
       { hash: "ghi9012", msg: "chore: update dependencies", date: "3 days ago" },
     ];
 
-    const count = Math.min(options["max-count"], commits.length);
+    const count = Math.min(options.maxCount, commits.length);
 
     for (let i = 0; i < count; i++) {
       const c = commits[i]!;
@@ -89,9 +101,9 @@ const log = command("log")
 // git branch
 const branch = command("branch")
   .description("List, create, or delete branches")
-  .argument("[name]", "Branch name to create")
-  .option("-d, --delete", "Delete a branch")
-  .option("-a, --all", "List all branches")
+  .argument({ name: "name", kind: "string", description: "Branch name to create" })
+  .flag({ name: "delete", short: "d", description: "Delete a branch" })
+  .flag({ name: "all", short: "a", description: "List all branches" })
   .action(({ args, options }) => {
     if (options.delete && args.name) {
       console.log(color.green(`Deleted branch ${args.name}`));
@@ -111,8 +123,8 @@ const branch = command("branch")
 // git remote subcommands
 const remoteAdd = command("add")
   .description("Add a remote")
-  .argument("<name>", "Remote name")
-  .argument("<url>", "Remote URL")
+  .argument({ name: "name", kind: "string", required: true, description: "Remote name" })
+  .argument({ name: "url", kind: "string", required: true, description: "Remote URL" })
   .action(({ args }) => {
     console.log(color.green(`Added remote ${args.name} -> ${args.url}`));
   });
@@ -120,14 +132,14 @@ const remoteAdd = command("add")
 const remoteRemove = command("remove")
   .description("Remove a remote")
   .alias("rm")
-  .argument("<name>", "Remote name")
+  .argument({ name: "name", kind: "string", required: true, description: "Remote name" })
   .action(({ args }) => {
     console.log(color.yellow(`Removed remote ${args.name}`));
   });
 
 const remote = command("remote")
   .description("Manage remote repositories")
-  .option("-v, --verbose", "Show remote URLs")
+  .flag({ name: "verbose", short: "v", description: "Show remote URLs" })
   .subcommand(remoteAdd)
   .subcommand(remoteRemove)
   .action(({ options }) => {

@@ -9,10 +9,10 @@ import { cli, command, color, createSpinner, table } from "../packages/boune/src
 const list = command("list")
   .description("List files in a directory")
   .alias("ls")
-  .argument("[path]", "Directory to list", { default: "." })
-  .option("-a, --all", "Include hidden files")
-  .option("-l, --long", "Use long listing format")
-  .option("-h, --human", "Human-readable sizes")
+  .argument({ name: "path", kind: "string", default: ".", description: "Directory to list" })
+  .flag({ name: "all", short: "a", description: "Include hidden files" })
+  .flag({ name: "long", short: "l", description: "Use long listing format" })
+  .flag({ name: "human", short: "h", description: "Human-readable sizes" })
   .action(async ({ args, options }) => {
     const glob = new Bun.Glob(options.all ? "{*,.*}" : "*");
 
@@ -46,10 +46,10 @@ const list = command("list")
 const read = command("read")
   .description("Read and display file contents")
   .alias("cat")
-  .argument("<file>", "File to read")
-  .option("-n, --lines", "Show line numbers")
-  .option("--head <number>", "Show only first N lines", { type: "number" })
-  .option("--tail <number>", "Show only last N lines", { type: "number" })
+  .argument({ name: "file", kind: "string", required: true, description: "File to read" })
+  .flag({ name: "lines", short: "n", description: "Show line numbers" })
+  .option({ name: "head", kind: "number", description: "Show only first N lines" })
+  .option({ name: "tail", kind: "number", description: "Show only last N lines" })
   .action(async ({ args, options }) => {
     const file = Bun.file(args.file);
 
@@ -79,9 +79,9 @@ const read = command("read")
 const copy = command("copy")
   .description("Copy files")
   .alias("cp")
-  .argument("<source>", "Source file")
-  .argument("<dest>", "Destination")
-  .option("-f, --force", "Overwrite existing files")
+  .argument({ name: "source", kind: "string", required: true, description: "Source file" })
+  .argument({ name: "dest", kind: "string", required: true, description: "Destination" })
+  .flag({ name: "force", short: "f", description: "Overwrite existing files" })
   .action(async ({ args, options }) => {
     const sourceFile = Bun.file(args.source);
     if (!(await sourceFile.exists())) {
@@ -106,14 +106,19 @@ const copy = command("copy")
 const search = command("search")
   .description("Search for pattern in files")
   .alias("grep")
-  .argument("<pattern>", "Pattern to search for")
-  .argument("[path]", "Directory to search", { default: "." })
-  .option("-i, --ignore-case", "Case-insensitive search")
-  .option("-r, --recursive", "Search recursively")
-  .option("-n, --line-number", "Show line numbers")
-  .option("--glob <pattern>", "File pattern to match", { default: "**/*" })
+  .argument({
+    name: "pattern",
+    kind: "string",
+    required: true,
+    description: "Pattern to search for",
+  })
+  .argument({ name: "path", kind: "string", default: ".", description: "Directory to search" })
+  .flag({ name: "ignoreCase", short: "i", description: "Case-insensitive search" })
+  .flag({ name: "recursive", short: "r", description: "Search recursively" })
+  .flag({ name: "lineNumber", short: "n", description: "Show line numbers" })
+  .option({ name: "glob", kind: "string", default: "**/*", description: "File pattern to match" })
   .action(async ({ args, options }) => {
-    const regex = new RegExp(args.pattern, options["ignore-case"] ? "gi" : "g");
+    const regex = new RegExp(args.pattern, options.ignoreCase ? "gi" : "g");
     const glob = new Bun.Glob(options.glob);
 
     let matchCount = 0;
@@ -133,7 +138,7 @@ const search = command("search")
           const line = lines[i]!;
           if (regex.test(line)) {
             matchCount++;
-            const lineNum = options["line-number"] ? color.dim(`${i + 1}:`) : "";
+            const lineNum = options.lineNumber ? color.dim(`${i + 1}:`) : "";
             const highlighted = line.replace(regex, (m) => color.red(color.bold(m)));
             console.log(`${color.magenta(file)}:${lineNum}${highlighted}`);
           }
@@ -149,7 +154,7 @@ const search = command("search")
 // File info
 const info = command("info")
   .description("Show file information")
-  .argument("<file>", "File to inspect")
+  .argument({ name: "file", kind: "string", required: true, description: "File to inspect" })
   .action(async ({ args }) => {
     const file = Bun.file(args.file);
 
