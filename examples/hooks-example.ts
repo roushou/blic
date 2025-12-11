@@ -32,8 +32,13 @@ const deploy = command("deploy")
     required: true,
     description: "Environment (staging, production)",
   })
-  .flag({ name: "force", short: "f", description: "Skip confirmation" })
-  .flag({ name: "dryRun", long: "dry-run", description: "Show what would be deployed" })
+  .option({ name: "force", short: "f", kind: "boolean", description: "Skip confirmation" })
+  .option({
+    name: "dryRun",
+    long: "dry-run",
+    kind: "boolean",
+    description: "Show what would be deployed",
+  })
   .hook("preAction", ({ args }) => {
     if (args.env === "production") {
       console.log(color.yellow("⚠️  Deploying to PRODUCTION"));

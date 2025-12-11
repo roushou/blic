@@ -64,23 +64,7 @@ export type InferArgValue<
   : InferKind<TKind, TVariadic>;
 
 // ============================================================================
-// Flag Types (boolean options without values)
-// ============================================================================
-
-/** Flag configuration options */
-export interface FlagOptions<TName extends string = string> {
-  /** Flag name (used for access in options object) */
-  name: TName;
-  /** Short flag (single character, e.g., "v" for -v) */
-  short?: string;
-  /** Long flag (defaults to name if not specified) */
-  long?: string;
-  /** Description shown in help */
-  description?: string;
-}
-
-// ============================================================================
-// Option Types (with values)
+// Option Types
 // ============================================================================
 
 /** Option configuration options */
@@ -110,16 +94,18 @@ export interface OptionOptions<
   validate?: AnyValidator;
 }
 
-/** Infer option value type based on options (default implies always present) */
+/** Infer option value type based on options (default implies always present, boolean always present) */
 export type InferOptionValue<
   TKind extends Kind,
   TRequired extends boolean,
   TDefault,
-> = TDefault extends undefined
-  ? TRequired extends true
-    ? InferKind<TKind>
-    : InferKind<TKind> | undefined
-  : InferKind<TKind>;
+> = TKind extends "boolean"
+  ? boolean // Boolean options always have a value (default: false)
+  : TDefault extends undefined
+    ? TRequired extends true
+      ? InferKind<TKind>
+      : InferKind<TKind> | undefined
+    : InferKind<TKind>;
 
 // ============================================================================
 // Internal Definitions (used by parser)

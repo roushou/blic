@@ -1,7 +1,6 @@
 import type {
   CliConfig,
   CommandConfig,
-  FlagOptions,
   HookHandler,
   HookType,
   Kind,
@@ -85,22 +84,6 @@ export class Cli {
   }
 
   /**
-   * Add a global boolean flag
-   */
-  flag(options: FlagOptions): this {
-    this.config.globalOptions.push({
-      name: options.name,
-      short: options.short,
-      long: options.long ?? options.name,
-      description: options.description ?? "",
-      type: "boolean",
-      required: false,
-      default: false,
-    });
-    return this;
-  }
-
-  /**
    * Add a global option with a value
    */
   option<TKind extends Kind>(options: OptionOptions<string, TKind>): this {
@@ -111,7 +94,8 @@ export class Cli {
       description: options.description ?? "",
       type: options.kind,
       required: options.required ?? false,
-      default: options.default,
+      // Boolean options default to false (flags)
+      default: options.kind === "boolean" ? (options.default ?? false) : options.default,
       env: options.env,
       validate: options.validate,
     });

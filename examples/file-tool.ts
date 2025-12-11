@@ -10,9 +10,9 @@ const list = command("list")
   .description("List files in a directory")
   .alias("ls")
   .argument({ name: "path", kind: "string", default: ".", description: "Directory to list" })
-  .flag({ name: "all", short: "a", description: "Include hidden files" })
-  .flag({ name: "long", short: "l", description: "Use long listing format" })
-  .flag({ name: "human", short: "h", description: "Human-readable sizes" })
+  .option({ name: "all", short: "a", kind: "boolean", description: "Include hidden files" })
+  .option({ name: "long", short: "l", kind: "boolean", description: "Use long listing format" })
+  .option({ name: "human", short: "h", kind: "boolean", description: "Human-readable sizes" })
   .action(async ({ args, options }) => {
     const glob = new Bun.Glob(options.all ? "{*,.*}" : "*");
 
@@ -47,7 +47,7 @@ const read = command("read")
   .description("Read and display file contents")
   .alias("cat")
   .argument({ name: "file", kind: "string", required: true, description: "File to read" })
-  .flag({ name: "lines", short: "n", description: "Show line numbers" })
+  .option({ name: "lines", short: "n", kind: "boolean", description: "Show line numbers" })
   .option({ name: "head", kind: "number", description: "Show only first N lines" })
   .option({ name: "tail", kind: "number", description: "Show only last N lines" })
   .action(async ({ args, options }) => {
@@ -81,7 +81,7 @@ const copy = command("copy")
   .alias("cp")
   .argument({ name: "source", kind: "string", required: true, description: "Source file" })
   .argument({ name: "dest", kind: "string", required: true, description: "Destination" })
-  .flag({ name: "force", short: "f", description: "Overwrite existing files" })
+  .option({ name: "force", short: "f", kind: "boolean", description: "Overwrite existing files" })
   .action(async ({ args, options }) => {
     const sourceFile = Bun.file(args.source);
     if (!(await sourceFile.exists())) {
@@ -113,9 +113,14 @@ const search = command("search")
     description: "Pattern to search for",
   })
   .argument({ name: "path", kind: "string", default: ".", description: "Directory to search" })
-  .flag({ name: "ignoreCase", short: "i", description: "Case-insensitive search" })
-  .flag({ name: "recursive", short: "r", description: "Search recursively" })
-  .flag({ name: "lineNumber", short: "n", description: "Show line numbers" })
+  .option({
+    name: "ignoreCase",
+    short: "i",
+    kind: "boolean",
+    description: "Case-insensitive search",
+  })
+  .option({ name: "recursive", short: "r", kind: "boolean", description: "Search recursively" })
+  .option({ name: "lineNumber", short: "n", kind: "boolean", description: "Show line numbers" })
   .option({ name: "glob", kind: "string", default: "**/*", description: "File pattern to match" })
   .action(async ({ args, options }) => {
     const regex = new RegExp(args.pattern, options.ignoreCase ? "gi" : "g");

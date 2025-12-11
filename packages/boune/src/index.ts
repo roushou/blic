@@ -10,7 +10,6 @@ export type {
   ArgumentOptions,
   CliConfig,
   CommandConfig,
-  FlagOptions,
   HookHandler,
   HookType,
   InferArgValue,

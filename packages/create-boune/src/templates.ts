@@ -57,7 +57,7 @@ import { cli, command, color } from "boune";
 const greet = command("greet")
   .description("Greet someone")
   .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
-  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
+  .option({ name: "loud", short: "l", kind: "boolean", description: "Shout the greeting" })
   .action(({ args, options }) => {
     const msg = \`Hello, \${args.name}!\`;
     console.log(options.loud ? color.bold(msg.toUpperCase()) : msg);
@@ -175,7 +175,7 @@ cli("${name}")
 export const greet = command("greet")
   .description("Greet someone")
   .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
-  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
+  .option({ name: "loud", short: "l", kind: "boolean", description: "Shout the greeting" })
   .option({ name: "times", short: "t", kind: "number", default: 1, description: "Repeat the greeting" })
   .action(({ args, options }) => {
     for (let i = 0; i < options.times; i++) {

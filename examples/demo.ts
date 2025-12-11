@@ -18,7 +18,7 @@ import { text, confirm, select } from "../packages/boune/src/prompt/index.ts";
 const greet = command("greet")
   .description("Greet someone")
   .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
-  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
+  .option({ name: "loud", short: "l", kind: "boolean", description: "Shout the greeting" })
   .option({
     name: "times",
     short: "t",
@@ -36,7 +36,12 @@ const greet = command("greet")
 // Build command with subcommands
 const buildWatch = command("watch")
   .description("Watch for changes and rebuild")
-  .flag({ name: "poll", short: "p", description: "Use polling instead of native watchers" })
+  .option({
+    name: "poll",
+    short: "p",
+    kind: "boolean",
+    description: "Use polling instead of native watchers",
+  })
   .action(({ options }) => {
     console.log(color.cyan("Watching for changes..."));
     console.log(`Polling: ${options.poll ? "yes" : "no"}`);
@@ -53,7 +58,7 @@ const build = command("build")
     default: "dist",
     description: "Output directory",
   })
-  .flag({ name: "minify", short: "m", description: "Minify output" })
+  .option({ name: "minify", short: "m", kind: "boolean", description: "Minify output" })
   .subcommand(buildWatch)
   .action(({ args, options }) => {
     console.log(color.bold("Building project..."));

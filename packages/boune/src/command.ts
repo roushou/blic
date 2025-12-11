@@ -3,7 +3,6 @@ import type {
   ArgumentDef,
   ArgumentOptions,
   CommandConfig,
-  FlagOptions,
   HookHandler,
   HookType,
   InferArgValue,
@@ -90,25 +89,6 @@ export class Command<
   }
 
   /**
-   * Add a boolean flag (no value)
-   */
-  flag<TName extends string>(
-    options: FlagOptions<TName>,
-  ): Command<TArgs, TOpts & { [K in TName]: boolean }> {
-    const def: OptionDef = {
-      name: options.name,
-      short: options.short,
-      long: options.long ?? options.name,
-      description: options.description ?? "",
-      type: "boolean",
-      required: false,
-      default: false,
-    };
-    this.config.options.push(def);
-    return this as unknown as Command<TArgs, TOpts & { [K in TName]: boolean }>;
-  }
-
-  /**
    * Add an option with a value
    */
   option<
@@ -126,7 +106,8 @@ export class Command<
       description: options.description ?? "",
       type: options.kind,
       required: options.required ?? false,
-      default: options.default,
+      // Boolean options default to false (flags)
+      default: options.kind === "boolean" ? (options.default ?? false) : options.default,
       env: options.env,
       validate: options.validate,
     };

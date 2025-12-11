@@ -29,7 +29,7 @@ import { cli, command } from "boune";
 const greet = command("greet")
   .description("Greet someone")
   .argument({ name: "name", kind: "string", required: true, description: "Name to greet" })
-  .flag({ name: "loud", short: "l", description: "Shout the greeting" })
+  .option({ name: "loud", short: "l", kind: "boolean", description: "Shout the greeting" })
   .action(({ args, options }) => {
     const msg = `Hello, ${args.name}!`;
     console.log(options.loud ? msg.toUpperCase() : msg);
@@ -96,15 +96,16 @@ command("repeat").argument({
 });
 ```
 
-## Flags and Options
+## Options
 
-Use `.flag()` for boolean toggles and `.option()` for values.
+Use `.option()` to define options. Use `kind: "boolean"` for flags (no value).
 
 ```ts
-// Boolean flag (no value)
-command("build").flag({
+// Boolean option (flag - no value)
+command("build").option({
   name: "verbose",
   short: "v",
+  kind: "boolean",
   description: "Verbose output",
 });
 
@@ -135,13 +136,13 @@ command("deploy").option({
 });
 ```
 
-### Flag vs Option
+### Boolean vs Value Options
 
-|       | `.flag()`          | `.option()`         |
-| ----- | ------------------ | ------------------- |
-| Value | No value (boolean) | Takes a value       |
-| Type  | Always `boolean`   | Specify with `kind` |
-| Usage | `--verbose`, `-v`  | `--port 8080`       |
+| Kind      | Usage             | Example           |
+| --------- | ----------------- | ----------------- |
+| `boolean` | No value (toggle) | `--verbose`, `-v` |
+| `string`  | Takes a string    | `--output dist`   |
+| `number`  | Takes a number    | `--port 8080`     |
 
 ## Subcommands
 

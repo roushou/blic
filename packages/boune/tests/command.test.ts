@@ -84,10 +84,11 @@ describe("command builder", () => {
     ]);
   });
 
-  test("adds boolean flag", () => {
-    const cmd = command("build").flag({
+  test("adds boolean option", () => {
+    const cmd = command("build").option({
       name: "verbose",
       short: "v",
+      kind: "boolean",
       description: "Verbose output",
     });
     const config = cmd.getConfig();
@@ -100,6 +101,8 @@ describe("command builder", () => {
         type: "boolean",
         required: false,
         default: false,
+        env: undefined,
+        validate: undefined,
       },
     ]);
   });
@@ -185,7 +188,7 @@ describe("command builder", () => {
       .alias("b")
       .argument({ name: "entry", kind: "string", required: true, description: "Entry file" })
       .option({ name: "output", short: "o", kind: "string", description: "Output directory" })
-      .flag({ name: "watch", short: "w", description: "Watch mode" })
+      .option({ name: "watch", short: "w", kind: "boolean", description: "Watch mode" })
       .action(({ args, options }) => {
         console.log(args, options);
       });

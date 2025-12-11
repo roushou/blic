@@ -44,7 +44,7 @@ const list = command("list")
   .alias("ls")
   .option({ name: "status", short: "s", kind: "string", description: "Filter by status" })
   .option({ name: "priority", short: "p", kind: "string", description: "Filter by priority" })
-  .flag({ name: "all", description: "Show all tasks including done" })
+  .option({ name: "all", kind: "boolean", description: "Show all tasks including done" })
   .action(({ options }) => {
     let query = "SELECT * FROM tasks";
     const conditions: string[] = [];
@@ -155,7 +155,7 @@ const remove = command("remove")
   .description("Remove a task")
   .alias("rm")
   .argument({ name: "id", kind: "number", required: true, description: "Task ID" })
-  .flag({ name: "force", short: "f", description: "Skip confirmation" })
+  .option({ name: "force", short: "f", kind: "boolean", description: "Skip confirmation" })
   .action(async ({ args, options }) => {
     const task = db.query("SELECT * FROM tasks WHERE id = ?").get(args.id) as Task | null;
     if (!task) {
@@ -181,7 +181,7 @@ const remove = command("remove")
 // Clear completed tasks
 const clear = command("clear")
   .description("Remove all completed tasks")
-  .flag({ name: "force", short: "f", description: "Skip confirmation" })
+  .option({ name: "force", short: "f", kind: "boolean", description: "Skip confirmation" })
   .action(async ({ options }) => {
     const count = (
       db.query("SELECT COUNT(*) as count FROM tasks WHERE status = 'done'").get() as {

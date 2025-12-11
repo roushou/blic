@@ -15,8 +15,8 @@ const add = command("add")
     variadic: true,
     description: "Files to add",
   })
-  .flag({ name: "all", short: "A", description: "Add all changes" })
-  .flag({ name: "patch", short: "p", description: "Interactively choose hunks" })
+  .option({ name: "all", short: "A", kind: "boolean", description: "Add all changes" })
+  .option({ name: "patch", short: "p", kind: "boolean", description: "Interactively choose hunks" })
   .action(({ args, options }) => {
     if (options.all) {
       console.log(color.green("Adding all changes..."));
@@ -32,8 +32,13 @@ const add = command("add")
 const commit = command("commit")
   .description("Record changes to the repository")
   .option({ name: "message", short: "m", kind: "string", description: "Commit message" })
-  .flag({ name: "all", short: "a", description: "Automatically stage modified files" })
-  .flag({ name: "amend", description: "Amend previous commit" })
+  .option({
+    name: "all",
+    short: "a",
+    kind: "boolean",
+    description: "Automatically stage modified files",
+  })
+  .option({ name: "amend", kind: "boolean", description: "Amend previous commit" })
   .action(({ options }) => {
     if (!options.message && !options.amend) {
       console.error(color.red("error: no commit message provided"));
@@ -48,7 +53,12 @@ const commit = command("commit")
 // git status
 const status = command("status")
   .description("Show the working tree status")
-  .flag({ name: "short", short: "s", description: "Give output in short format" })
+  .option({
+    name: "short",
+    short: "s",
+    kind: "boolean",
+    description: "Give output in short format",
+  })
   .action(({ options }) => {
     if (options.short) {
       console.log("M  src/index.ts");
@@ -74,7 +84,7 @@ const log = command("log")
     default: 10,
     description: "Limit number of commits",
   })
-  .flag({ name: "oneline", description: "Show each commit on one line" })
+  .option({ name: "oneline", kind: "boolean", description: "Show each commit on one line" })
   .action(({ options }) => {
     const commits = [
       { hash: "abc1234", msg: "feat: add user authentication", date: "2 hours ago" },
@@ -102,8 +112,8 @@ const log = command("log")
 const branch = command("branch")
   .description("List, create, or delete branches")
   .argument({ name: "name", kind: "string", description: "Branch name to create" })
-  .flag({ name: "delete", short: "d", description: "Delete a branch" })
-  .flag({ name: "all", short: "a", description: "List all branches" })
+  .option({ name: "delete", short: "d", kind: "boolean", description: "Delete a branch" })
+  .option({ name: "all", short: "a", kind: "boolean", description: "List all branches" })
   .action(({ args, options }) => {
     if (options.delete && args.name) {
       console.log(color.green(`Deleted branch ${args.name}`));
@@ -139,7 +149,7 @@ const remoteRemove = command("remove")
 
 const remote = command("remote")
   .description("Manage remote repositories")
-  .flag({ name: "verbose", short: "v", description: "Show remote URLs" })
+  .option({ name: "verbose", short: "v", kind: "boolean", description: "Show remote URLs" })
   .subcommand(remoteAdd)
   .subcommand(remoteRemove)
   .action(({ options }) => {

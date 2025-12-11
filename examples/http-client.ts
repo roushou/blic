@@ -16,8 +16,8 @@ const get = command("get")
     description: "Add header (can be repeated)",
   })
   .option({ name: "output", short: "o", kind: "string", description: "Write response to file" })
-  .flag({ name: "verbose", short: "v", description: "Show response headers" })
-  .flag({ name: "json", description: "Parse response as JSON" })
+  .option({ name: "verbose", short: "v", kind: "boolean", description: "Show response headers" })
+  .option({ name: "json", kind: "boolean", description: "Parse response as JSON" })
   .action(async ({ args, options }) => {
     const spinner = createSpinner(`GET ${args.url}`).start();
 
@@ -72,7 +72,7 @@ const post = command("post")
     default: "application/json",
     description: "Content-Type header",
   })
-  .flag({ name: "verbose", short: "v", description: "Show response headers" })
+  .option({ name: "verbose", short: "v", kind: "boolean", description: "Show response headers" })
   .action(async ({ args, options }) => {
     const spinner = createSpinner(`POST ${args.url}`).start();
 
@@ -150,7 +150,7 @@ const download = command("download")
   .alias("dl")
   .argument({ name: "url", kind: "string", required: true, description: "URL to download" })
   .argument({ name: "output", kind: "string", description: "Output filename" })
-  .flag({ name: "quiet", short: "q", description: "Suppress progress output" })
+  .option({ name: "quiet", short: "q", kind: "boolean", description: "Suppress progress output" })
   .action(async ({ args, options }) => {
     const output = args.output || args.url.split("/").pop() || "download";
 
