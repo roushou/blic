@@ -117,15 +117,18 @@ export const argument = {
   /**
    * Create a string argument builder
    */
-  string: () => new ArgBuilder<string | undefined, "string">("string"),
+  string: (): ArgBuilder<string | undefined, "string"> =>
+    new ArgBuilder<string | undefined, "string">("string"),
 
   /**
    * Create a number argument builder
    */
-  number: () => new ArgBuilder<number | undefined, "number">("number"),
+  number: (): ArgBuilder<number | undefined, "number"> =>
+    new ArgBuilder<number | undefined, "number">("number"),
 
   /**
    * Create a boolean argument builder
    */
-  boolean: () => new ArgBuilder<boolean | undefined, "boolean">("boolean"),
+  boolean: (): ArgBuilder<boolean | undefined, "boolean"> =>
+    new ArgBuilder<boolean | undefined, "boolean">("boolean"),
 };

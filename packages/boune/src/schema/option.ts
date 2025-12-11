@@ -131,15 +131,17 @@ export const option = {
   /**
    * Create a string option builder
    */
-  string: () => new OptBuilder<string | undefined, "string">("string"),
+  string: (): OptBuilder<string | undefined, "string"> =>
+    new OptBuilder<string | undefined, "string">("string"),
 
   /**
    * Create a number option builder
    */
-  number: () => new OptBuilder<number | undefined, "number">("number"),
+  number: (): OptBuilder<number | undefined, "number"> =>
+    new OptBuilder<number | undefined, "number">("number"),
 
   /**
    * Create a boolean option builder (flag, defaults to false)
    */
-  boolean: () => new OptBuilder<boolean, "boolean">("boolean"),
+  boolean: (): OptBuilder<boolean, "boolean"> => new OptBuilder<boolean, "boolean">("boolean"),
 };
