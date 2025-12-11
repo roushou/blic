@@ -7,6 +7,9 @@ import type {
   CommandConfig,
   MiddlewareContext,
   MiddlewareHandler,
+  ParsedArgs,
+  ParsedOptions,
+  Token,
   ValidationError,
 } from "./types.ts";
 import { type ShellType, generateCompletion } from "./completions/index.ts";
@@ -15,6 +18,310 @@ import { generateCliHelp, generateCommandHelp } from "./output/help.ts";
 import { parseArguments, parseOptions, tokenize } from "./parser/index.ts";
 import { closeStdin } from "./prompt/stdin.ts";
 import { error as formatError } from "./output/format.ts";
+
+// ============================================================================
+// Pipeline Types
+// ============================================================================
+
+/**
+ * Execution context passed through pipeline phases
+ */
+type PipelineContext = {
+  argv: string[];
+  tokens: Token[];
+  globalOptions: ParsedOptions;
+  commandPath: string[];
+  command: CommandConfig | null;
+  parentCommands: string[];
+  commandOptions: ParsedOptions;
+  args: ParsedArgs;
+  errors: ValidationError[];
+  firstUnknownArg: string | null;
+};
+
+/**
+ * Pipeline phase result
+ */
+type PhaseResult =
+  | { type: "continue"; ctx: PipelineContext }
+  | { type: "exit"; code?: number }
+  | { type: "execute"; ctx: PipelineContext };
+
+/**
+ * Pipeline phase definition
+ */
+type Phase = {
+  name: string;
+  run: (ctx: PipelineContext, config: CliConfig) => PhaseResult | Promise<PhaseResult>;
+};
+
+// ============================================================================
+// Pipeline Phases
+// ============================================================================
+
+/**
+ * Phase 1: Tokenize argv
+ */
+const tokenizePhase: Phase = {
+  name: "tokenize",
+  run: (ctx) => ({
+    type: "continue",
+    ctx: { ...ctx, tokens: tokenize(ctx.argv) },
+  }),
+};
+
+/**
+ * Phase 2: Parse global options
+ */
+const parseGlobalOptionsPhase: Phase = {
+  name: "parseGlobalOptions",
+  run: (ctx, config) => {
+    const { options, errors, remaining } = parseOptions(ctx.tokens, config.globalOptions, true);
+    return {
+      type: "continue",
+      ctx: {
+        ...ctx,
+        globalOptions: options,
+        tokens: remaining,
+        errors: [...ctx.errors, ...errors],
+      },
+    };
+  },
+};
+
+/**
+ * Phase 3: Handle --version flag
+ */
+const handleVersionPhase: Phase = {
+  name: "handleVersion",
+  run: (ctx, config) => {
+    if (ctx.globalOptions["version"]) {
+      console.log(config.version || "0.0.0");
+      return { type: "exit" };
+    }
+    return { type: "continue", ctx };
+  },
+};
+
+/**
+ * Phase 4: Extract command path from tokens
+ */
+const extractCommandPathPhase: Phase = {
+  name: "extractCommandPath",
+  run: (ctx, config) => {
+    const commandPath: string[] = [];
+    const argTokens: Token[] = [];
+    let firstUnknownArg: string | null = null;
+    let currentCommands = config.commands;
+
+    for (const token of ctx.tokens) {
+      // Try to match as command/subcommand
+      if (token.type === "argument") {
+        const cmd = currentCommands[token.value];
+        if (cmd && commandPath.length === 0) {
+          commandPath.push(token.value);
+          currentCommands = cmd.subcommands;
+          continue;
+        }
+        if (cmd && commandPath.length > 0) {
+          commandPath.push(token.value);
+          currentCommands = cmd.subcommands;
+          continue;
+        }
+        if (commandPath.length === 0 && firstUnknownArg === null) {
+          firstUnknownArg = token.value;
+        }
+      }
+      argTokens.push(token);
+    }
+
+    return {
+      type: "continue",
+      ctx: { ...ctx, commandPath, tokens: argTokens, firstUnknownArg },
+    };
+  },
+};
+
+/**
+ * Phase 5: Handle --help at root level
+ */
+const handleRootHelpPhase: Phase = {
+  name: "handleRootHelp",
+  run: (ctx, config) => {
+    if (ctx.globalOptions["help"] && ctx.commandPath.length === 0) {
+      console.log(generateCliHelp(config));
+      return { type: "exit" };
+    }
+    return { type: "continue", ctx };
+  },
+};
+
+/**
+ * Phase 6: Handle no command / unknown command
+ */
+const handleNoCommandPhase: Phase = {
+  name: "handleNoCommand",
+  run: (ctx, config) => {
+    if (ctx.commandPath.length === 0) {
+      if (ctx.firstUnknownArg) {
+        const suggestions = suggestCommands(ctx.firstUnknownArg, config.commands);
+        console.error(formatError(`Unknown command: ${ctx.firstUnknownArg}`));
+        if (suggestions.length > 0) {
+          console.error(formatSuggestions(suggestions));
+        }
+        return { type: "exit", code: 1 };
+      }
+      console.log(generateCliHelp(config));
+      return { type: "exit" };
+    }
+    return { type: "continue", ctx };
+  },
+};
+
+/**
+ * Phase 7: Resolve command from path
+ */
+const resolveCommandPhase: Phase = {
+  name: "resolveCommand",
+  run: (ctx, config) => {
+    const [first, ...rest] = ctx.commandPath;
+    const initialCommand = config.commands[first!];
+
+    if (!initialCommand) {
+      const suggestions = suggestCommands(first ?? "", config.commands);
+      console.error(formatError(`Unknown command: ${ctx.commandPath.join(" ")}`));
+      if (suggestions.length > 0) {
+        console.error(formatSuggestions(suggestions));
+      }
+      return { type: "exit", code: 1 };
+    }
+
+    let command: CommandConfig = initialCommand;
+    const parentCommands: string[] = [];
+
+    for (const name of rest) {
+      parentCommands.push(command.name);
+      const sub: CommandConfig | undefined = command.subcommands[name];
+      if (!sub) break;
+      command = sub;
+    }
+
+    return {
+      type: "continue",
+      ctx: { ...ctx, command, parentCommands },
+    };
+  },
+};
+
+/**
+ * Phase 8: Handle --help for command
+ */
+const handleCommandHelpPhase: Phase = {
+  name: "handleCommandHelp",
+  run: (ctx, config) => {
+    if (ctx.globalOptions["help"] && ctx.command) {
+      console.log(
+        generateCommandHelp(ctx.command, config.name, ctx.parentCommands, config.globalOptions),
+      );
+      return { type: "exit" };
+    }
+    return { type: "continue", ctx };
+  },
+};
+
+/**
+ * Phase 9: Parse command-specific options
+ */
+const parseCommandOptionsPhase: Phase = {
+  name: "parseCommandOptions",
+  run: (ctx) => {
+    if (!ctx.command) return { type: "continue", ctx };
+
+    const { options, errors, remaining } = parseOptions(ctx.tokens, ctx.command.options);
+
+    return {
+      type: "continue",
+      ctx: {
+        ...ctx,
+        commandOptions: options,
+        tokens: remaining,
+        errors: [...ctx.errors, ...errors],
+      },
+    };
+  },
+};
+
+/**
+ * Phase 10: Parse positional arguments
+ */
+const parseArgumentsPhase: Phase = {
+  name: "parseArguments",
+  run: (ctx) => {
+    if (!ctx.command) return { type: "continue", ctx };
+
+    const positionalValues = ctx.tokens.filter((t) => t.type === "argument").map((t) => t.value);
+    const { args, errors } = parseArguments(positionalValues, ctx.command.arguments);
+
+    return {
+      type: "continue",
+      ctx: { ...ctx, args, errors: [...ctx.errors, ...errors] },
+    };
+  },
+};
+
+/**
+ * Phase 11: Validate and check for errors
+ */
+const validatePhase: Phase = {
+  name: "validate",
+  run: (ctx) => {
+    if (ctx.errors.length > 0) {
+      for (const err of ctx.errors) {
+        console.error(formatError(err.message));
+      }
+      return { type: "exit", code: 1 };
+    }
+    return { type: "continue", ctx };
+  },
+};
+
+/**
+ * Phase 12: Check if command has action, show help if not
+ */
+const checkActionPhase: Phase = {
+  name: "checkAction",
+  run: (ctx, config) => {
+    if (!ctx.command?.action) {
+      console.log(
+        generateCommandHelp(ctx.command!, config.name, ctx.parentCommands, config.globalOptions),
+      );
+      return { type: "exit" };
+    }
+    return { type: "execute", ctx };
+  },
+};
+
+/**
+ * All pipeline phases in order
+ */
+const phases: Phase[] = [
+  tokenizePhase,
+  parseGlobalOptionsPhase,
+  handleVersionPhase,
+  extractCommandPathPhase,
+  handleRootHelpPhase,
+  handleNoCommandPhase,
+  resolveCommandPhase,
+  handleCommandHelpPhase,
+  parseCommandOptionsPhase,
+  parseArgumentsPhase,
+  validatePhase,
+  checkActionPhase,
+];
+
+// ============================================================================
+// CLI Class
+// ============================================================================
 
 /**
  * CLI runtime class
@@ -73,183 +380,47 @@ export class Cli {
   }
 
   /**
-   * Find command from path
+   * Create initial pipeline context
    */
-  private findCommand(
-    commandPath: string[],
-  ): { command: CommandConfig; parentCommands: string[] } | null {
-    if (commandPath.length === 0) return null;
-
-    const [first, ...rest] = commandPath;
-    let command: CommandConfig | undefined = this.config.commands[first!];
-    if (!command) return null;
-
-    const parentCommands: string[] = [];
-    for (const name of rest) {
-      parentCommands.push(command.name);
-      const sub: CommandConfig | undefined = command.subcommands[name];
-      if (!sub) break;
-      command = sub;
-    }
-
-    return { command, parentCommands };
+  private createInitialContext(argv: string[]): PipelineContext {
+    return {
+      argv,
+      tokens: [],
+      globalOptions: {},
+      commandPath: [],
+      command: null,
+      parentCommands: [],
+      commandOptions: {},
+      args: {},
+      errors: [],
+      firstUnknownArg: null,
+    };
   }
 
   /**
-   * Parse argv and run the appropriate command
+   * Execute the command action with middleware
    */
-  async run(argv: string[] = process.argv.slice(2)): Promise<void> {
-    const tokens = tokenize(argv);
+  private async executeAction(ctx: PipelineContext): Promise<void> {
+    const command = ctx.command!;
+    const allOptions = { ...ctx.globalOptions, ...ctx.commandOptions };
 
-    // Parse global options first
-    const {
-      options: globalOpts,
-      errors: globalErrors,
-      remaining,
-    } = parseOptions(
-      tokens,
-      this.config.globalOptions,
-      true, // Allow unknown options (they might be command-specific)
-    );
-
-    // Handle --version
-    if (globalOpts["version"]) {
-      console.log(this.config.version || "0.0.0");
-      return;
-    }
-
-    // Extract command path from remaining tokens
-    const commandPath: string[] = [];
-    const argTokens: typeof remaining = [];
-    let firstUnknownArg: string | null = null;
-
-    for (const token of remaining) {
-      if (token.type === "argument" && commandPath.length === 0) {
-        // First check if it's a command
-        const potentialCmd = this.config.commands[token.value];
-        if (potentialCmd) {
-          commandPath.push(token.value);
-          continue;
-        } else if (firstUnknownArg === null) {
-          // Track first argument that could be an unknown command
-          firstUnknownArg = token.value;
-        }
-      }
-
-      // Check if it's a subcommand
-      if (commandPath.length > 0 && token.type === "argument") {
-        const result = this.findCommand(commandPath);
-        if (result) {
-          const sub = result.command.subcommands[token.value];
-          if (sub) {
-            commandPath.push(token.value);
-            continue;
-          }
-        }
-      }
-
-      argTokens.push(token);
-    }
-
-    // Handle --help at root level
-    if (globalOpts["help"] && commandPath.length === 0) {
-      console.log(generateCliHelp(this.config));
-      return;
-    }
-
-    // No command specified
-    if (commandPath.length === 0) {
-      // Check if first argument looks like an unknown command
-      if (firstUnknownArg) {
-        const suggestions = suggestCommands(firstUnknownArg, this.config.commands);
-        console.error(formatError(`Unknown command: ${firstUnknownArg}`));
-        if (suggestions.length > 0) {
-          console.error(formatSuggestions(suggestions));
-        }
-        process.exit(1);
-      }
-      // Show help
-      console.log(generateCliHelp(this.config));
-      return;
-    }
-
-    // Find the command
-    const result = this.findCommand(commandPath);
-    if (!result) {
-      const input = commandPath[0] ?? "";
-      const suggestions = suggestCommands(input, this.config.commands);
-      console.error(formatError(`Unknown command: ${commandPath.join(" ")}`));
-      if (suggestions.length > 0) {
-        console.error(formatSuggestions(suggestions));
-      }
-      process.exit(1);
-    }
-
-    const { command, parentCommands } = result;
-
-    // Handle --help for command
-    if (globalOpts["help"]) {
-      console.log(
-        generateCommandHelp(command, this.config.name, parentCommands, this.config.globalOptions),
-      );
-      return;
-    }
-
-    // Parse command-specific options
-    const {
-      options: cmdOpts,
-      errors: cmdErrors,
-      remaining: cmdRemaining,
-    } = parseOptions(argTokens, command.options);
-
-    // Merge options
-    const allOptions = { ...globalOpts, ...cmdOpts };
-
-    // Parse positional arguments
-    const positionalValues = cmdRemaining.filter((t) => t.type === "argument").map((t) => t.value);
-    const { args, errors: argErrors } = parseArguments(positionalValues, command.arguments);
-
-    // Collect all errors
-    const allErrors: ValidationError[] = [...globalErrors, ...cmdErrors, ...argErrors];
-
-    if (allErrors.length > 0) {
-      for (const err of allErrors) {
-        console.error(formatError(err.message));
-      }
-      process.exit(1);
-    }
-
-    // Check if command has an action
-    if (!command.action) {
-      // Show command help if no action
-      console.log(
-        generateCommandHelp(command, this.config.name, parentCommands, this.config.globalOptions),
-      );
-      return;
-    }
-
-    // Build middleware context
     const middlewareCtx: MiddlewareContext = {
       command,
-      args,
+      args: ctx.args,
       options: allOptions,
-      rawArgs: argv,
+      rawArgs: ctx.argv,
     };
 
-    // Run the command with middleware
     try {
-      // Combine global middleware with command's before middleware
       const beforeMiddleware: MiddlewareHandler[] = [
         ...(this.config.middleware ?? []),
         ...(command.before ?? []),
       ];
 
-      // Run before middleware chain, then action
       await this.runMiddleware(beforeMiddleware, middlewareCtx, async () => {
-        await command.action!({ args, options: allOptions, rawArgs: argv });
+        await command.action!({ args: ctx.args, options: allOptions, rawArgs: ctx.argv });
       });
 
-      // Run after middleware (not in chain, just sequential)
       if (command.after) {
         for (const handler of command.after) {
           await handler(middlewareCtx, async () => {});
@@ -257,8 +428,6 @@ export class Cli {
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-
-      // Try command-level error handler first, then global
       const errorHandler = command.onError ?? this.config.onError;
 
       if (errorHandler) {
@@ -267,8 +436,39 @@ export class Cli {
         console.error(formatError(error.message));
         process.exit(1);
       }
+    }
+  }
+
+  /**
+   * Run the pipeline phases
+   */
+  private async runPipeline(argv: string[]): Promise<void> {
+    let ctx = this.createInitialContext(argv);
+
+    for (const phase of phases) {
+      const result = await phase.run(ctx, this.config);
+
+      switch (result.type) {
+        case "continue":
+          ctx = result.ctx;
+          break;
+        case "exit":
+          if (result.code) process.exit(result.code);
+          return;
+        case "execute":
+          await this.executeAction(result.ctx);
+          return;
+      }
+    }
+  }
+
+  /**
+   * Parse argv and run the appropriate command
+   */
+  async run(argv: string[] = process.argv.slice(2)): Promise<void> {
+    try {
+      await this.runPipeline(argv);
     } finally {
-      // Close stdin to allow process to exit naturally
       closeStdin();
     }
   }
