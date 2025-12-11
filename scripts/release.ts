@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { cli, command, info, success, error } from "../packages/boune/src/index.ts";
+import { cli, command, error, info, success } from "../packages/boune/src/index.ts";
 
 import bounePkg from "../packages/boune/package.json";
 import createBounePkg from "../packages/create-boune/package.json";

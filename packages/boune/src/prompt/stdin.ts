@@ -2,8 +2,8 @@
  * Shared stdin reader utility using process.stdin directly
  */
 
-import * as tty from "node:tty";
 import * as readline from "node:readline";
+import * as tty from "node:tty";
 
 let readCount = 0;
 let rl: readline.Interface | null = null;

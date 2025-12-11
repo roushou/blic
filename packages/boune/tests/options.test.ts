@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import type { OptionDef } from "../src/types.ts";
 import { parseOptions } from "../src/parser/options.ts";
 import { tokenize } from "../src/parser/tokenizer.ts";
-import type { OptionDef } from "../src/types.ts";
 
 describe("parseOptions", () => {
   test("parses boolean flags", () => {
@@ -69,7 +69,7 @@ describe("parseOptions", () => {
       { name: "config", description: "Config", type: "string", required: true },
     ];
     const tokens = tokenize([]);
-    const { options, errors } = parseOptions(tokens, defs);
+    const { errors } = parseOptions(tokens, defs);
     expect(errors.length).toBe(1);
     expect(errors[0]?.type).toBe("missing_required");
   });
@@ -77,7 +77,7 @@ describe("parseOptions", () => {
   test("reports unknown options", () => {
     const defs: OptionDef[] = [];
     const tokens = tokenize(["--unknown"]);
-    const { options, errors } = parseOptions(tokens, defs);
+    const { errors } = parseOptions(tokens, defs);
     expect(errors.length).toBe(1);
     expect(errors[0]?.type).toBe("unknown_option");
   });
@@ -85,7 +85,7 @@ describe("parseOptions", () => {
   test("allows unknown options when configured", () => {
     const defs: OptionDef[] = [];
     const tokens = tokenize(["--unknown"]);
-    const { options, errors } = parseOptions(tokens, defs, true);
+    const { errors } = parseOptions(tokens, defs, true);
     expect(errors).toEqual([]);
   });
 

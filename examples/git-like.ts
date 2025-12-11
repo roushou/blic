@@ -3,7 +3,7 @@
 /**
  * Git-like CLI demonstrating subcommands and complex argument handling
  */
-import { cli, command, color } from "../packages/boune/src/index.ts";
+import { cli, color, command } from "../packages/boune/src/index.ts";
 
 // git add <files...>
 const add = command("add")

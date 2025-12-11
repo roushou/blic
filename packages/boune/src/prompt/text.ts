@@ -1,6 +1,6 @@
+import type { Validator } from "../validation/types.ts";
 import { color } from "../output/color.ts";
 import { readLine } from "./stdin.ts";
-import type { Validator } from "../validation/types.ts";
 
 export interface TextOptions {
   message: string;
@@ -16,7 +16,7 @@ export interface TextOptions {
  * Prompt for text input
  */
 export async function text(options: TextOptions): Promise<string> {
-  const { message, default: defaultValue, placeholder, validate, validator } = options;
+  const { message, default: defaultValue, validate, validator } = options;
 
   // Build prompt string
   let prompt = color.cyan("? ") + color.bold(message);

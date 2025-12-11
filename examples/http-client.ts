@@ -3,7 +3,7 @@
 /**
  * HTTP client CLI demonstrating async operations and environment variables
  */
-import { cli, command, color, createSpinner } from "../packages/boune/src/index.ts";
+import { cli, color, command, createSpinner } from "../packages/boune/src/index.ts";
 
 // GET request
 const get = command("get")
@@ -165,7 +165,7 @@ const download = command("download")
       }
 
       const contentLength = response.headers.get("content-length");
-      const total = contentLength ? parseInt(contentLength, 10) : 0;
+      const _total = contentLength ? parseInt(contentLength, 10) : 0;
 
       const content = await response.arrayBuffer();
       await Bun.write(output, content);

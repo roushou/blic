@@ -1,9 +1,8 @@
 #!/usr/bin/env bun
 
+import { closeStdin, confirm, select, text } from "boune/prompt";
 import { color, createSpinner } from "boune";
-import { text, select, confirm } from "boune/prompt";
 import { generateProject } from "./generator.ts";
-import { closeStdin } from "boune/prompt";
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);

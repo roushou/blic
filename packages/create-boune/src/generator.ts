@@ -1,4 +1,4 @@
-import { getMinimalTemplate, getFullTemplate, type TemplateFile } from "./templates.ts";
+import { type TemplateFile, getFullTemplate, getMinimalTemplate } from "./templates.ts";
 
 export interface GenerateOptions {
   name: string;

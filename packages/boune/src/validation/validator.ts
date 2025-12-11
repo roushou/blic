@@ -3,12 +3,12 @@
  */
 
 import type {
+  BooleanValidator,
+  NumberValidator,
+  StringValidator,
   ValidationResult,
   ValidationRule,
   Validator,
-  StringValidator,
-  NumberValidator,
-  BooleanValidator,
 } from "./types.ts";
 
 /**

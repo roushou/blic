@@ -8,13 +8,13 @@ import type {
   ParsedOptions,
   ValidationError,
 } from "./types.ts";
-import { Command } from "./command.ts";
-import { parseArguments, parseOptions, tokenize } from "./parser/index.ts";
+import { type ShellType, generateCompletion } from "./completions/index.ts";
+import { formatSuggestions, suggestCommands } from "./suggest.ts";
 import { generateCliHelp, generateCommandHelp } from "./output/help.ts";
-import { error as formatError } from "./output/format.ts";
+import { parseArguments, parseOptions, tokenize } from "./parser/index.ts";
+import { Command } from "./command.ts";
 import { closeStdin } from "./prompt/stdin.ts";
-import { suggestCommands, formatSuggestions } from "./suggest.ts";
-import { generateCompletion, type ShellType } from "./completions/index.ts";
+import { error as formatError } from "./output/format.ts";
 
 /**
  * Main CLI builder class
@@ -205,7 +205,7 @@ export class Cli {
         if (potentialCmd) {
           commandPath.push(token.value);
           // Check for subcommands
-          let currentCmd = potentialCmd;
+          let _currentCmd = potentialCmd;
           continue;
         } else if (firstUnknownArg === null) {
           // Track first argument that could be an unknown command

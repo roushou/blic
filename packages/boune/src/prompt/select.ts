@@ -1,6 +1,7 @@
+import * as tty from "node:tty";
+
 import { color } from "../output/color.ts";
 import { readKey } from "./stdin.ts";
-import * as tty from "node:tty";
 
 export interface SelectOption<T = string> {
   label: string;

@@ -3,9 +3,10 @@
 /**
  * Task manager CLI demonstrating SQLite persistence with bun:sqlite
  */
+import { cli, color, command, table } from "../packages/boune/src/index.ts";
+import { confirm, select, text } from "../packages/boune/src/prompt/index.ts";
+
 import { Database } from "bun:sqlite";
-import { cli, command, color, table } from "../packages/boune/src/index.ts";
-import { text, select, confirm } from "../packages/boune/src/prompt/index.ts";
 
 // Initialize database
 const db = new Database(":memory:");

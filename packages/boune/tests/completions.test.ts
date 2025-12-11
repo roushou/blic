@@ -1,11 +1,11 @@
+import type { CliConfig, CommandConfig } from "../src/types.ts";
 import { describe, expect, test } from "bun:test";
 import {
   generateBashCompletion,
-  generateZshCompletion,
-  generateFishCompletion,
   generateCompletion,
+  generateFishCompletion,
+  generateZshCompletion,
 } from "../src/completions/index.ts";
-import type { CliConfig, CommandConfig } from "../src/types.ts";
 
 function createTestConfig(): CliConfig {
   const buildCommand: CommandConfig = {

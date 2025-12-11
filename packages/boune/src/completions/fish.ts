@@ -21,7 +21,7 @@ export function generateFishCompletion(config: CliConfig): string {
 
   // Get visible commands
   const commands = getVisibleCommands(config.commands);
-  const commandNames = commands.map((c) => c.name);
+  const _commandNames = commands.map((c) => c.name);
 
   // Helper function to check if we're at a specific command
   lines.push(`# Helper function to check current command context`);

@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
 import { coerceValue, parseArguments } from "../src/parser/args.ts";
+import { describe, expect, test } from "bun:test";
 import type { ArgumentDef } from "../src/types.ts";
 
 describe("coerceValue", () => {
@@ -47,7 +47,7 @@ describe("parseArguments", () => {
     const defs: ArgumentDef[] = [
       { name: "name", description: "Name", required: true, type: "string" },
     ];
-    const { args, errors } = parseArguments([], defs);
+    const { errors } = parseArguments([], defs);
     expect(errors.length).toBe(1);
     expect(errors[0]?.type).toBe("missing_required");
   });

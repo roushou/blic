@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { levenshtein, suggestCommands, formatSuggestions } from "../src/suggest.ts";
+import { formatSuggestions, levenshtein, suggestCommands } from "../src/suggest.ts";
 import type { CommandConfig } from "../src/types.ts";
 
 describe("levenshtein", () => {

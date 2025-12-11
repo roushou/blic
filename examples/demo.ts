@@ -4,15 +4,15 @@
  * Demo CLI showcasing boune features
  */
 import {
-  cli,
-  command,
-  color,
-  createSpinner,
-  createProgressBar,
-  v,
   type ShellType,
+  cli,
+  color,
+  command,
+  createProgressBar,
+  createSpinner,
+  v,
 } from "../packages/boune/src/index.ts";
-import { text, confirm, select } from "../packages/boune/src/prompt/index.ts";
+import { confirm, select, text } from "../packages/boune/src/prompt/index.ts";
 
 // Greet command with argument and options
 const greet = command("greet")
@@ -78,7 +78,7 @@ const init = command("init")
       default: "my-project",
     });
 
-    const template = await select({
+    const _template = await select({
       message: "Select a template:",
       options: [
         { label: "Minimal", value: "minimal", hint: "Basic setup" },
@@ -88,7 +88,7 @@ const init = command("init")
       default: "minimal",
     });
 
-    const useTypeScript = await confirm({
+    const _useTypeScript = await confirm({
       message: "Use TypeScript?",
       default: true,
     });

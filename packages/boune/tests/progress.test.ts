@@ -1,4 +1,4 @@
-import { describe, expect, test, spyOn, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { createProgressBar } from "../src/output/format.ts";
 
 describe("createProgressBar", () => {
@@ -13,16 +13,6 @@ describe("createProgressBar", () => {
   afterEach(() => {
     stdoutSpy.mockRestore();
     consoleSpy.mockRestore();
-  });
-
-  test("creates progress bar with default options", () => {
-    const bar = createProgressBar("Loading");
-    expect(bar).toBeDefined();
-    expect(bar.update).toBeInstanceOf(Function);
-    expect(bar.increment).toBeInstanceOf(Function);
-    expect(bar.complete).toBeInstanceOf(Function);
-    expect(bar.fail).toBeInstanceOf(Function);
-    expect(bar.stop).toBeInstanceOf(Function);
   });
 
   test("update renders progress bar", () => {

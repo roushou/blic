@@ -1,6 +1,6 @@
+import type { Validator } from "../validation/types.ts";
 import { color } from "../output/color.ts";
 import { readLine } from "./stdin.ts";
-import type { Validator } from "../validation/types.ts";
 
 export interface PasswordOptions {
   message: string;
@@ -17,7 +17,7 @@ export interface PasswordOptions {
  * you would need to disable terminal echo which requires native bindings.
  */
 export async function password(options: PasswordOptions): Promise<string> {
-  const { message, mask = "*", validate, validator } = options;
+  const { message, validate, validator } = options;
 
   // Build prompt string
   const prompt = color.cyan("? ") + color.bold(message) + " ";

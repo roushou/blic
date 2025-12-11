@@ -8,11 +8,15 @@
   "scripts": {
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",
+    "lint": "oxlint . --fix",
+    "lint:check": "oxlint . --type-aware",
     "release": "bun scripts/release.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "oxfmt": "^0.17.0",
+    "oxlint": "^1.32.0",
+    "oxlint-tsgolint": "^0.8.5",
     "typescript": "^5"
   }
 }

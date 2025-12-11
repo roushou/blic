@@ -1,4 +1,4 @@
-import { describe, expect, test, mock, spyOn, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { cli } from "../src/cli.ts";
 import { command } from "../src/command.ts";
 

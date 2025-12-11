@@ -3,7 +3,7 @@
 /**
  * File manipulation CLI demonstrating Bun-specific APIs
  */
-import { cli, command, color, createSpinner, table } from "../packages/boune/src/index.ts";
+import { cli, color, command, createSpinner, table } from "../packages/boune/src/index.ts";
 
 // List files with details
 const list = command("list")
