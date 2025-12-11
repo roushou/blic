@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "clean": "bun run ./scripts/clean.ts",
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",
     "lint": "oxlint . --fix",
