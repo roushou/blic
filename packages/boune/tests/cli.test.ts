@@ -1,27 +1,10 @@
-import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { defineCli, defineCommand } from "../src/define/index.ts";
+import { describe, expect, mock, test } from "bun:test";
 import { argument } from "../src/schema/argument.ts";
 import { option } from "../src/schema/option.ts";
+import { testCli } from "../src/testing/index.ts";
 
 describe("defineCli", () => {
-  let consoleSpy: ReturnType<typeof spyOn>;
-  let consoleErrorSpy: ReturnType<typeof spyOn>;
-  let exitSpy: ReturnType<typeof spyOn>;
-
-  beforeEach(() => {
-    consoleSpy = spyOn(console, "log").mockImplementation(() => {});
-    consoleErrorSpy = spyOn(console, "error").mockImplementation(() => {});
-    exitSpy = spyOn(process, "exit").mockImplementation(() => {
-      throw new Error("process.exit called");
-    });
-  });
-
-  afterEach(() => {
-    consoleSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
-    exitSpy.mockRestore();
-  });
-
   test("creates cli with declarative schema", () => {
     const app = defineCli({
       name: "myapp",
@@ -65,7 +48,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["build"]);
+
+    await testCli(app).run(["build"]);
 
     expect(actionMock).toHaveBeenCalled();
   });
@@ -87,7 +71,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["greet", "World"]);
+
+    await testCli(app).run(["greet", "World"]);
 
     expect(receivedContext.args.name).toBe("World");
   });
@@ -109,7 +94,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["serve", "--port", "8080"]);
+
+    await testCli(app).run(["serve", "--port", "8080"]);
 
     expect(receivedContext.options.port).toBe(8080);
   });
@@ -121,11 +107,10 @@ describe("defineCli", () => {
       description: "My app",
       commands: {},
     });
-    await app.run(["--help"]);
 
-    expect(consoleSpy).toHaveBeenCalled();
-    const output = consoleSpy.mock.calls[0]?.[0];
-    expect(output).toContain("My app");
+    const result = await testCli(app).run(["--help"]);
+
+    expect(result.stdout).toContain("My app");
   });
 
   test("shows version with --version flag", async () => {
@@ -134,9 +119,10 @@ describe("defineCli", () => {
       version: "1.2.3",
       commands: {},
     });
-    await app.run(["--version"]);
 
-    expect(consoleSpy).toHaveBeenCalledWith("1.2.3");
+    const result = await testCli(app).run(["--version"]);
+
+    expect(result.stdout).toContain("1.2.3");
   });
 
   test("runs subcommands", async () => {
@@ -158,7 +144,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["build", "watch"]);
+
+    await testCli(app).run(["build", "watch"]);
 
     expect(actionMock).toHaveBeenCalled();
   });
@@ -183,7 +170,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["build"]);
+
+    await testCli(app).run(["build"]);
 
     expect(order).toEqual(["before", "action"]);
   });
@@ -207,7 +195,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["build"]);
+
+    await testCli(app).run(["build"]);
 
     expect(order).toEqual(["action", "after"]);
   });
@@ -238,13 +227,14 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["build"]);
+
+    await testCli(app).run(["build"]);
 
     expect(order).toEqual(["global", "command", "action"]);
   });
 
   test("handles errors with command error handler", async () => {
-    let caughtError: Error | null = null;
+    let caughtError: Error | undefined;
 
     const app = defineCli({
       name: "myapp",
@@ -260,13 +250,15 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["fail"]);
 
-    expect(caughtError?.message).toBe("Command failed");
+    await testCli(app).run(["fail"]);
+
+    expect(caughtError).toBeDefined();
+    expect(caughtError!.message).toBe("Command failed");
   });
 
   test("handles errors with global error handler", async () => {
-    let caughtError: Error | null = null;
+    let caughtError: Error | undefined;
 
     const app = defineCli({
       name: "myapp",
@@ -282,9 +274,11 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["fail"]);
 
-    expect(caughtError?.message).toBe("Command failed");
+    await testCli(app).run(["fail"]);
+
+    expect(caughtError).toBeDefined();
+    expect(caughtError!.message).toBe("Command failed");
   });
 
   test("accepts pre-built CommandConfig", async () => {
@@ -302,7 +296,8 @@ describe("defineCli", () => {
         build: buildCommand,
       },
     });
-    await app.run(["build"]);
+
+    await testCli(app).run(["build"]);
 
     expect(actionMock).toHaveBeenCalled();
   });
@@ -321,8 +316,8 @@ describe("defineCli", () => {
       },
     });
 
-    // Running with alias should work
-    await app.run(["b"]);
+    await testCli(app).run(["b"]);
+
     expect(actionMock).toHaveBeenCalled();
   });
 
@@ -343,7 +338,8 @@ describe("defineCli", () => {
         },
       },
     });
-    await app.run(["build", "--verbose"]);
+
+    await testCli(app).run(["build", "--verbose"]);
 
     expect(receivedContext.options.verbose).toBe(true);
   });
