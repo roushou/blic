@@ -1,49 +1,64 @@
-# Starlight Starter Kit: Basics
+# Boune Documentation
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+Documentation site for [Boune](https://github.com/roushou/boune), built with [Astro](https://astro.build).
 
-```
-bun create astro@latest -- --template starlight
-```
+## Development
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+```bash
+# Install dependencies
+bun install
 
-## 🚀 Project Structure
+# Start dev server
+bun run dev
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+# Build for production
+bun run build
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+# Preview production build
+bun run preview
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## Project Structure
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+```
+src/
+├── content/docs/        # Markdown documentation files
+├── components/docs/     # Sidebar, TableOfContents
+├── layouts/             # DocsLayout
+├── pages/
+│   ├── index.astro      # Landing page
+│   └── docs/[...slug].astro  # Documentation pages
+└── styles/
+    ├── landing.css      # Landing page styles
+    └── docs.css         # Documentation styles
+```
 
-Static assets, like favicons, can be placed in the `public/` directory.
+## Adding Documentation
 
-## 🧞 Commands
+1. Create a new `.md` file in `src/content/docs/`:
 
-All commands are run from the root of the project, from a terminal:
+```markdown
+---
+title: Page Title
+description: Brief description of the page.
+---
 
-| Command               | Action                                           |
-| :-------------------- | :----------------------------------------------- |
-| `bun install`         | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+Your content here...
+```
 
-## 👀 Want to learn more?
+2. Add the page to the sidebar in `src/components/docs/Sidebar.astro`:
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+```typescript
+const navigation = [
+  {
+    title: "Section Name",
+    items: [
+      { label: "Page Title", href: "/docs/your-page" },
+    ],
+  },
+];
+```
+
+## Deployment
+
+The site deploys to Cloudflare Pages

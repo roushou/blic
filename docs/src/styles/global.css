@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@theme {
+  --color-neon-pink: #ff00ff;
+  --color-neon-blue: #00ffff;
+  --color-neon-green: #00ff00;
+  --color-neon-yellow: #ffff00;
+  --color-dark: #050510;
+  --color-terminal: #0a0a0f;
+  --color-traffic-red: #ff5f56;
+  --color-traffic-yellow: #ffbd2e;
+  --color-traffic-green: #27ca40;
+}

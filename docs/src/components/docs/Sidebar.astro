@@ -1,0 +1,74 @@
+---
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const navigation = [
+  {
+    title: "Getting Started",
+    items: [
+      { label: "Introduction", href: "/docs/introduction" },
+      { label: "Quick Start", href: "/docs/quick-start" },
+    ],
+  },
+  {
+    title: "Core Concepts",
+    items: [
+      { label: "Commands", href: "/docs/commands" },
+      { label: "Arguments & Options", href: "/docs/arguments-options" },
+      { label: "Validation", href: "/docs/validation" },
+    ],
+  },
+  {
+    title: "Features",
+    items: [
+      { label: "Prompts", href: "/docs/prompts" },
+      { label: "Output & Styling", href: "/docs/output" },
+      { label: "Shell Completions", href: "/docs/completions" },
+    ],
+  },
+  {
+    title: "Advanced",
+    items: [
+      { label: "Middleware", href: "/docs/middleware" },
+      { label: "Testing", href: "/docs/testing" },
+    ],
+  },
+];
+
+function isActive(href: string): boolean {
+  // Normalize paths for comparison
+  const normalizedCurrent = currentPath.replace(/\/$/, '');
+  const normalizedHref = href.replace(/\/$/, '');
+  return normalizedCurrent === normalizedHref;
+}
+---
+
+<nav class="py-6 px-4">
+  {navigation.map((section) => (
+    <div class="mb-6">
+      <h3 class="text-sm font-bold text-neon-blue uppercase tracking-wider mb-3 px-2">
+        {section.title}
+      </h3>
+      <ul class="space-y-1">
+        {section.items.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                "block px-3 py-2 text-base transition-all duration-150",
+                isActive(item.href)
+                  ? "bg-neon-pink text-black font-bold"
+                  : "text-gray-300 hover:text-neon-pink hover:bg-white/5",
+              ]}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</nav>

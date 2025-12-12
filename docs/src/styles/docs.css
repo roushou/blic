@@ -1,0 +1,289 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon-pink: #ff00ff;
+  --color-neon-blue: #00ffff;
+  --color-neon-green: #00ff00;
+  --color-neon-yellow: #ffff00;
+  --color-dark: #050510;
+  --color-terminal: #0a0a0f;
+}
+
+/* Base */
+body {
+  font-family: "Space Mono", ui-monospace, monospace;
+  background-color: var(--color-dark);
+}
+
+.pixel-font {
+  font-family: "Press Start 2P", cursive;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff00ff;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff66ff;
+}
+
+/* Selection */
+::selection {
+  background: #ff00ff;
+  color: white;
+}
+
+/* Prose styles for markdown content */
+.prose-docs {
+  color: #e0e0e0;
+  line-height: 1.75;
+}
+
+/* Headings with neon glow */
+.prose-docs h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #2a2a4a;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.prose-docs h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.4);
+}
+
+.prose-docs h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-docs p {
+  margin-bottom: 1.25rem;
+}
+
+/* Glowing links */
+.prose-docs a {
+  color: #00ffff;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.prose-docs a:hover {
+  color: #ff00ff;
+  border-bottom-color: #ff00ff;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+}
+
+/* Terminal-style code blocks */
+.prose-docs .code-block {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+.prose-docs .code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0a0a0f;
+  border: 1px solid #2a2a4a;
+  border-bottom: none;
+  padding: 0.5rem 1rem;
+}
+
+.prose-docs .code-block-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.prose-docs .code-block-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.prose-docs .code-block-dot--red {
+  background: #ff5f56;
+  box-shadow: 0 0 6px #ff5f56;
+}
+
+.prose-docs .code-block-dot--yellow {
+  background: #ffbd2e;
+  box-shadow: 0 0 6px #ffbd2e;
+}
+
+.prose-docs .code-block-dot--green {
+  background: #27ca40;
+  box-shadow: 0 0 6px #27ca40;
+}
+
+.prose-docs .code-block-lang {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.prose-docs .code-block-copy {
+  background: transparent;
+  border: 1px solid #2a2a4a;
+  color: #666;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.prose-docs .code-block-copy:hover {
+  border-color: #00ffff;
+  color: #00ffff;
+}
+
+.prose-docs .code-block-copy.copied {
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.prose-docs pre {
+  background: #0a0a0f !important;
+  border: 1px solid #2a2a4a;
+  border-radius: 0;
+  padding: 1rem;
+  margin: 0;
+  overflow-x: auto;
+  font-size: 1rem;
+}
+
+.prose-docs .code-block pre {
+  border-top: none;
+}
+
+.prose-docs code {
+  font-family: "Space Mono", ui-monospace, monospace;
+  font-size: 1em;
+}
+
+.prose-docs :not(pre) > code {
+  background: #1a1a2e;
+  color: #ff00ff;
+  padding: 0.2em 0.4em;
+  border-radius: 0;
+}
+
+/* Lists */
+.prose-docs ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose-docs ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose-docs li {
+  margin-bottom: 0.5rem;
+}
+
+.prose-docs li::marker {
+  color: #ff00ff;
+}
+
+/* Tables */
+.prose-docs table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.prose-docs th {
+  background: #1a1a2e;
+  color: #00ffff;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #00ffff;
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+}
+
+.prose-docs td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.prose-docs tr:hover {
+  background: rgba(255, 0, 255, 0.05);
+}
+
+/* Blockquotes */
+.prose-docs blockquote {
+  border-left: 4px solid #ff00ff;
+  background: rgba(255, 0, 255, 0.05);
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.1);
+}
+
+.prose-docs blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Horizontal rule */
+.prose-docs hr {
+  border: none;
+  border-top: 1px solid #2a2a4a;
+  margin: 2rem 0;
+}
+
+/* Strong/Bold */
+.prose-docs strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Emphasis */
+.prose-docs em {
+  color: #e0e0e0;
+}
+
+/* Active TOC link */
+.toc-link {
+  transition: all 0.2s ease;
+}
+
+.toc-link.active {
+  color: #ff00ff !important;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}

@@ -1,0 +1,230 @@
+---
+import "../styles/docs.css";
+
+import "@fontsource/space-mono/400.css";
+import "@fontsource/space-mono/700.css";
+import "@fontsource/press-start-2p/400.css";
+
+import Sidebar from "../components/docs/Sidebar.astro";
+import TableOfContents from "../components/docs/TableOfContents.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
+const { title, description, headings = [] } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | Boune Docs</title>
+    <meta name="description" content={description || `${title} - Boune CLI Framework Documentation`} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style is:inline>
+      html, body { background-color: #050510; }
+    </style>
+  </head>
+  <body class="bg-dark text-gray-200 font-mono min-h-screen">
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-40 bg-dark/95 backdrop-blur-sm border-b-2 border-neon-blue">
+      <div class="flex items-center justify-between px-4 h-14">
+        <div class="flex items-center gap-6">
+          <!-- Mobile menu button -->
+          <button
+            id="mobile-menu-btn"
+            class="lg:hidden text-neon-blue hover:text-neon-pink transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <!-- Logo -->
+          <a href="/" class="pixel-font text-neon-blue hover:text-neon-pink transition-colors text-lg flex items-center gap-2">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+            BOUNE
+          </a>
+        </div>
+
+        <nav class="flex items-center gap-6 font-bold">
+          <a href="/docs/introduction" class="hover:text-neon-pink transition-colors">DOCS</a>
+          <a
+            href="https://github.com/roushou/boune"
+            target="_blank"
+            class="bg-neon-pink text-black px-3 py-1.5 hover:scale-105 transition-transform"
+          >
+            GITHUB
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main container -->
+    <div class="pt-14 lg:grid lg:grid-cols-[260px_1fr_220px]">
+      <!-- Left Sidebar -->
+      <aside
+        id="sidebar"
+        class="fixed lg:sticky top-14 left-0 h-[calc(100vh-3.5rem)] w-64 lg:w-auto bg-dark border-r border-gray-800 overflow-y-auto z-30 transform -translate-x-full lg:translate-x-0 transition-transform duration-200"
+      >
+        <Sidebar currentPath={currentPath} />
+      </aside>
+
+      <!-- Backdrop for mobile -->
+      <div
+        id="sidebar-backdrop"
+        class="fixed inset-0 bg-black/50 z-20 lg:hidden hidden"
+      ></div>
+
+      <!-- Main content -->
+      <main class="min-h-[calc(100vh-3.5rem)] px-6 py-8 lg:px-12 max-w-4xl">
+        <article class="prose-docs">
+          <h1 class="text-3xl font-bold text-white mb-2 pb-4 border-b-2 border-neon-pink">
+            {title}
+          </h1>
+          {description && (
+            <p class="text-gray-400 text-lg mb-8">{description}</p>
+          )}
+          <slot />
+        </article>
+
+        <!-- Prev/Next navigation -->
+        <nav class="mt-16 pt-8 border-t border-gray-800 flex justify-between">
+          <slot name="prev" />
+          <slot name="next" />
+        </nav>
+      </main>
+
+      <!-- Right sidebar (TOC) -->
+      <aside class="hidden lg:block sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-8 pr-4">
+        {headings.length > 0 && <TableOfContents headings={headings} />}
+      </aside>
+    </div>
+
+    <script>
+      // Mobile menu toggle
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+
+      function toggleMenu() {
+        sidebar?.classList.toggle('-translate-x-full');
+        backdrop?.classList.toggle('hidden');
+      }
+
+      menuBtn?.addEventListener('click', toggleMenu);
+      backdrop?.addEventListener('click', toggleMenu);
+
+      // Terminal-style code blocks with copy button
+      document.querySelectorAll('.prose-docs pre').forEach((pre) => {
+        // Skip if already wrapped
+        if (pre.parentElement?.classList.contains('code-block')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-block';
+
+        const header = document.createElement('div');
+        header.className = 'code-block-header';
+
+        // Terminal dots
+        const dots = document.createElement('div');
+        dots.className = 'code-block-dots';
+        dots.innerHTML = `
+          <span class="code-block-dot code-block-dot--red"></span>
+          <span class="code-block-dot code-block-dot--yellow"></span>
+          <span class="code-block-dot code-block-dot--green"></span>
+        `;
+
+        // Language label from code class
+        const code = pre.querySelector('code');
+        const langClass = code?.className.match(/language-(\w+)/);
+        const lang = langClass ? langClass[1] : '';
+
+        const langLabel = document.createElement('span');
+        langLabel.className = 'code-block-lang';
+        langLabel.textContent = lang;
+
+        // Copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'code-block-copy';
+        copyBtn.innerHTML = `
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Copy</span>
+        `;
+
+        copyBtn.addEventListener('click', async () => {
+          const text = code?.textContent || '';
+          await navigator.clipboard.writeText(text);
+          copyBtn.classList.add('copied');
+          copyBtn.innerHTML = `
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Copied!</span>
+          `;
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.innerHTML = `
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy</span>
+            `;
+          }, 2000);
+        });
+
+        const rightGroup = document.createElement('div');
+        rightGroup.className = 'flex items-center gap-3';
+        rightGroup.appendChild(langLabel);
+        rightGroup.appendChild(copyBtn);
+
+        header.appendChild(dots);
+        header.appendChild(rightGroup);
+
+        pre.parentNode?.insertBefore(wrapper, pre);
+        wrapper.appendChild(header);
+        wrapper.appendChild(pre);
+      });
+
+      // TOC scroll spy
+      const tocLinks = document.querySelectorAll('.toc-link');
+      const headings = document.querySelectorAll('.prose-docs h2, .prose-docs h3');
+
+      function updateActiveToc() {
+        const scrollPos = window.scrollY + 100;
+
+        let activeId = '';
+        headings.forEach((heading) => {
+          if (heading.getBoundingClientRect().top + window.scrollY <= scrollPos) {
+            activeId = heading.id;
+          }
+        });
+
+        tocLinks.forEach((link) => {
+          const href = link.getAttribute('href');
+          if (href === `#${activeId}`) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', updateActiveToc, { passive: true });
+      updateActiveToc();
+    </script>
+  </body>
+</html>
