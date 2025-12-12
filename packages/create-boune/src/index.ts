@@ -102,6 +102,19 @@ const cli = defineCli({
   version: "0.5.0",
   description: "Scaffold a new CLI project with boune",
   commands: { new: newCommand },
-})
+});
 
-cli.run();
+// Pre-process args to support `bun create boune [name]` without explicit "new" command
+const argv = process.argv.slice(2);
+const firstArg = argv[0];
+
+// If no args or first arg is not "new" and not a global flag, inject "new"
+const isGlobalFlag =
+  firstArg === "--help" || firstArg === "-h" || firstArg === "--version" || firstArg === "-V";
+const isNewCommand = firstArg === "new";
+
+if (!firstArg || (!isGlobalFlag && !isNewCommand)) {
+  cli.run(["new", ...argv]);
+} else {
+  cli.run(argv);
+}
