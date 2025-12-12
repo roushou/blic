@@ -1,8 +1,5 @@
 #!/usr/bin/env bun
 
-/**
- * Example demonstrating middleware patterns (replaces old hooks)
- */
 import { argument, color, defineCli, defineCommand, option } from "../packages/boune/src/index.ts";
 import type { MiddlewareHandler } from "../packages/boune/src/types";
 
