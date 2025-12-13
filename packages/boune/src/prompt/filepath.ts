@@ -1,7 +1,6 @@
 import * as path from "node:path";
 import * as tty from "node:tty";
 import { readKey, readLine } from "./stdin.ts";
-import { Glob } from "bun";
 import { color } from "../output/color.ts";
 
 export interface FilepathOptions {
@@ -58,7 +57,7 @@ function readEntries(dirPath: string, options: FilepathOptions): Entry[] {
 
     // Scan for directories (if not fileOnly)
     if (!fileOnly) {
-      const dirGlob = new Glob("*/");
+      const dirGlob = new Bun.Glob("*/");
       for (const entry of dirGlob.scanSync({ cwd: dirPath, dot: showHidden })) {
         const name = entry.replace(/\/$/, "");
         result.push({
@@ -72,7 +71,7 @@ function readEntries(dirPath: string, options: FilepathOptions): Entry[] {
     // Scan for files (if not directoryOnly)
     if (!directoryOnly) {
       const pattern = buildExtensionPattern(extensions);
-      const fileGlob = new Glob(pattern);
+      const fileGlob = new Bun.Glob(pattern);
       for (const entry of fileGlob.scanSync({ cwd: dirPath, dot: showHidden, onlyFiles: true })) {
         // Skip if it contains a slash (subdirectory match)
         if (entry.includes("/")) continue;
