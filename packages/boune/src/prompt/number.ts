@@ -1,6 +1,5 @@
+import { linePrompt, runPrompt } from "./core/index.ts";
 import type { Validator } from "../validation/types.ts";
-import { color } from "../output/color.ts";
-import { readLine } from "./stdin.ts";
 
 export interface NumberOptions {
   message: string;
@@ -60,6 +59,43 @@ export function validateConstraints(value: number, options: NumberOptions): stri
 }
 
 /**
+ * Create a number prompt schema
+ */
+function createNumberSchema(options: NumberOptions) {
+  return linePrompt<number>({
+    message: options.message,
+    default: options.default,
+    validator: options.validator,
+    validate: options.validate,
+
+    hint: () => {
+      const hint = buildHint(options);
+      return hint || undefined;
+    },
+
+    parse: (raw, isEmpty) => {
+      if (isEmpty && options.default !== undefined) {
+        return { ok: true, value: options.default };
+      }
+
+      const value = Number(raw);
+
+      if (Number.isNaN(value)) {
+        return { ok: false, error: "Please enter a valid number" };
+      }
+
+      // Validate built-in constraints
+      const constraintResult = validateConstraints(value, options);
+      if (constraintResult !== true) {
+        return { ok: false, error: constraintResult };
+      }
+
+      return { ok: true, value };
+    },
+  });
+}
+
+/**
  * Prompt for number input
  *
  * @example
@@ -74,63 +110,6 @@ export function validateConstraints(value: number, options: NumberOptions): stri
  * ```
  */
 export async function number(options: NumberOptions): Promise<number> {
-  const { message, default: defaultValue, validate, validator } = options;
-
-  // Build prompt string
-  let prompt = color.cyan("? ") + color.bold(message);
-
-  const hint = buildHint(options);
-  if (hint) {
-    prompt += color.dim(` [${hint}]`);
-  }
-
-  if (defaultValue !== undefined) {
-    prompt += color.dim(` (${defaultValue})`);
-  }
-  prompt += " ";
-
-  process.stdout.write(prompt);
-
-  const input = await readLine();
-  const trimmed = input.trim();
-
-  // Apply default if empty
-  if (trimmed === "" && defaultValue !== undefined) {
-    return defaultValue;
-  }
-
-  // Parse number
-  const value = Number(trimmed);
-
-  if (Number.isNaN(value)) {
-    console.log(color.red("  Please enter a valid number"));
-    return number(options);
-  }
-
-  // Validate constraints
-  const constraintResult = validateConstraints(value, options);
-  if (constraintResult !== true) {
-    console.log(color.red(`  ${constraintResult}`));
-    return number(options);
-  }
-
-  // Validate with validator instance
-  if (validator) {
-    const validation = validator.validate(value);
-    if (validation !== true) {
-      console.log(color.red(`  ${validation}`));
-      return number(options);
-    }
-  }
-
-  // Validate with function (legacy)
-  if (validate) {
-    const validation = validate(value);
-    if (validation !== true) {
-      console.log(color.red(`  ${validation}`));
-      return number(options);
-    }
-  }
-
-  return value;
+  const schema = createNumberSchema(options);
+  return runPrompt(schema);
 }

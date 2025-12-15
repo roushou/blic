@@ -1,6 +1,5 @@
+import { linePrompt, runPrompt } from "./core/index.ts";
 import type { Validator } from "../validation/types.ts";
-import { color } from "../output/color.ts";
-import { readLine } from "./stdin.ts";
 
 export interface PasswordOptions {
   message: string;
@@ -12,38 +11,27 @@ export interface PasswordOptions {
 }
 
 /**
+ * Create a password prompt schema
+ */
+function createPasswordSchema(options: PasswordOptions) {
+  return linePrompt<string>({
+    message: options.message,
+    validator: options.validator,
+    validate: options.validate,
+
+    parse: (raw, _isEmpty) => {
+      // Password always parses successfully
+      return { ok: true, value: raw };
+    },
+  });
+}
+
+/**
  * Prompt for password/secret input
  * Note: This is a simple implementation. For true hidden input,
  * you would need to disable terminal echo which requires native bindings.
  */
 export async function password(options: PasswordOptions): Promise<string> {
-  const { message, validate, validator } = options;
-
-  // Build prompt string
-  const prompt = color.cyan("? ") + color.bold(message) + " ";
-
-  process.stdout.write(prompt);
-
-  const input = await readLine();
-  const result = input.trim();
-
-  // Validate with validator instance (new)
-  if (validator) {
-    const validation = validator.validate(result);
-    if (validation !== true) {
-      console.log(color.red(`  ${validation}`));
-      return password(options);
-    }
-  }
-
-  // Validate with function (legacy)
-  if (validate) {
-    const validation = validate(result);
-    if (validation !== true) {
-      console.log(color.red(`  ${validation}`));
-      return password(options);
-    }
-  }
-
-  return result;
+  const schema = createPasswordSchema(options);
+  return runPrompt(schema);
 }

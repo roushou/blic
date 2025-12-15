@@ -1,6 +1,5 @@
+import { linePrompt, runPrompt } from "./core/index.ts";
 import type { Validator } from "../validation/types.ts";
-import { color } from "../output/color.ts";
-import { readLine } from "./stdin.ts";
 
 export interface TextOptions {
   message: string;
@@ -13,45 +12,26 @@ export interface TextOptions {
 }
 
 /**
+ * Create a text prompt schema
+ */
+function createTextSchema(options: TextOptions) {
+  return linePrompt<string>({
+    message: options.message,
+    default: options.default,
+    validator: options.validator,
+    validate: options.validate,
+
+    parse: (raw, _isEmpty) => {
+      // Text always parses successfully (empty string is valid unless required)
+      return { ok: true, value: raw };
+    },
+  });
+}
+
+/**
  * Prompt for text input
  */
 export async function text(options: TextOptions): Promise<string> {
-  const { message, default: defaultValue, validate, validator } = options;
-
-  // Build prompt string
-  let prompt = color.cyan("? ") + color.bold(message);
-  if (defaultValue) {
-    prompt += color.dim(` (${defaultValue})`);
-  }
-  prompt += " ";
-
-  process.stdout.write(prompt);
-
-  const input = await readLine();
-  let result = input.trim();
-
-  // Apply default if empty
-  if (result === "" && defaultValue !== undefined) {
-    result = defaultValue;
-  }
-
-  // Validate with validator instance (new)
-  if (validator) {
-    const validation = validator.validate(result);
-    if (validation !== true) {
-      console.log(color.red(`  ${validation}`));
-      return text(options); // Retry
-    }
-  }
-
-  // Validate with function (legacy)
-  if (validate) {
-    const validation = validate(result);
-    if (validation !== true) {
-      console.log(color.red(`  ${validation}`));
-      return text(options); // Retry
-    }
-  }
-
-  return result;
+  const schema = createTextSchema(options);
+  return runPrompt(schema);
 }

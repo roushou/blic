@@ -1,5 +1,4 @@
-import { color } from "../output/color.ts";
-import { readLine } from "./stdin.ts";
+import { linePrompt, runPrompt } from "./core/index.ts";
 
 export interface ConfirmOptions {
   message: string;
@@ -7,33 +6,41 @@ export interface ConfirmOptions {
 }
 
 /**
+ * Create a confirm prompt schema
+ */
+function createConfirmSchema(options: ConfirmOptions) {
+  const defaultValue = options.default ?? false;
+
+  return linePrompt<boolean>({
+    message: options.message,
+    default: defaultValue,
+
+    hint: () => (defaultValue ? "Y/n" : "y/N"),
+
+    parse: (raw, isEmpty) => {
+      if (isEmpty) {
+        return { ok: true, value: defaultValue };
+      }
+
+      const lower = raw.toLowerCase();
+
+      if (lower === "y" || lower === "yes") {
+        return { ok: true, value: true };
+      }
+
+      if (lower === "n" || lower === "no") {
+        return { ok: true, value: false };
+      }
+
+      return { ok: false, error: "Please enter y or n" };
+    },
+  });
+}
+
+/**
  * Prompt for yes/no confirmation
  */
 export async function confirm(options: ConfirmOptions): Promise<boolean> {
-  const { message, default: defaultValue = false } = options;
-
-  // Build prompt string
-  const hint = defaultValue ? "Y/n" : "y/N";
-  const prompt = color.cyan("? ") + color.bold(message) + color.dim(` (${hint}) `);
-
-  process.stdout.write(prompt);
-
-  const input = await readLine();
-  const result = input.trim().toLowerCase();
-
-  if (result === "") {
-    return defaultValue;
-  }
-
-  if (result === "y" || result === "yes") {
-    return true;
-  }
-
-  if (result === "n" || result === "no") {
-    return false;
-  }
-
-  // Invalid input, retry
-  console.log(color.red("  Please enter y or n"));
-  return confirm(options);
+  const schema = createConfirmSchema(options);
+  return runPrompt(schema);
 }
