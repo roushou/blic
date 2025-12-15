@@ -1,4 +1,4 @@
-import type { CliConfig, CommandConfig, OptionDef } from "../types/index.ts";
+import type { CliConfig, CommandConfig, InternalOptionDef } from "../types/index.ts";
 import { color } from "./color.ts";
 
 /**
@@ -12,7 +12,7 @@ function formatArgument(argument: { name: string; required: boolean; variadic?: 
 /**
  * Format option syntax for display
  */
-function formatOption(option: OptionDef): string {
+function formatOption(option: InternalOptionDef): string {
   const parts: string[] = [];
   if (option.short) parts.push(`-${option.short}`);
   const longFlag = option.long ?? option.name;
@@ -37,7 +37,7 @@ export function generateCommandHelp(
   command: CommandConfig,
   cliName: string,
   parentCommands: string[] = [],
-  globalOptions: OptionDef[] = [],
+  globalOptions: InternalOptionDef[] = [],
 ): string {
   const lines: string[] = [];
   const commandPath = [cliName, ...parentCommands, command.name].join(" ");

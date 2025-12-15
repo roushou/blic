@@ -16,7 +16,7 @@ export type InferKind<K extends Kind, V extends boolean = false> = V extends tru
   : KindMap[K];
 
 /** Internal argument definition */
-export interface ArgumentDef {
+export interface InternalArgumentDef {
   name: string;
   description: string;
   required: boolean;
@@ -27,7 +27,7 @@ export interface ArgumentDef {
 }
 
 /** Internal option/flag definition */
-export interface OptionDef {
+export interface InternalOptionDef {
   name: string;
   short?: string;
   long?: string;

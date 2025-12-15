@@ -7,17 +7,17 @@ Boune provides a declarative API for defining arguments and options with full ty
 
 ## Arguments
 
-Arguments are positional values passed to your command.
+Arguments are positional values passed to your command. Define them as plain objects with a `type` property.
 
 ### String Arguments
 
 ```typescript
-import { defineCommand, argument } from "boune";
+import { defineCommand } from "boune";
 
 const greet = defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`); // args.name is string
@@ -35,8 +35,8 @@ myapp greet Alice
 const add = defineCommand({
   name: "add",
   arguments: {
-    a: argument.number().required(),
-    b: argument.number().required(),
+    a: { type: "number", required: true },
+    b: { type: "number", required: true },
   },
   action({ args }) {
     console.log(args.a + args.b); // Both are numbers
@@ -50,7 +50,7 @@ const add = defineCommand({
 const greet = defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().default("World"),
+    name: { type: "string", default: "World" },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`);
@@ -71,7 +71,7 @@ Accept multiple values:
 const cat = defineCommand({
   name: "cat",
   arguments: {
-    files: argument.string().required().variadic().describe("Files to read"),
+    files: { type: "string", required: true, variadic: true, description: "Files to read" },
   },
   action({ args }) {
     for (const file of args.files) { // string[]
@@ -92,13 +92,13 @@ Options are named flags that modify command behavior.
 ### Boolean Options
 
 ```typescript
-import { defineCommand, option } from "boune";
+import { defineCommand } from "boune";
 
 const build = defineCommand({
   name: "build",
   options: {
-    verbose: option.boolean().short("v").describe("Verbose output"),
-    minify: option.boolean().short("m").describe("Minify output"),
+    verbose: { type: "boolean", short: "v", description: "Verbose output" },
+    minify: { type: "boolean", short: "m", description: "Minify output" },
   },
   action({ options }) {
     if (options.verbose) console.log("Verbose mode");
@@ -118,7 +118,7 @@ myapp build -v -m
 const build = defineCommand({
   name: "build",
   options: {
-    output: option.string().short("o").default("dist").describe("Output dir"),
+    output: { type: "string", short: "o", default: "dist", description: "Output dir" },
   },
   action({ options }) {
     console.log(`Output: ${options.output}`);
@@ -137,7 +137,7 @@ myapp build -o build
 const serve = defineCommand({
   name: "serve",
   options: {
-    port: option.number().short("p").default(3000).describe("Port number"),
+    port: { type: "number", short: "p", default: 3000, description: "Port number" },
   },
   action({ options }) {
     console.log(`Listening on port ${options.port}`);
@@ -153,7 +153,7 @@ Read from environment variables:
 const deploy = defineCommand({
   name: "deploy",
   options: {
-    token: option.string().env("DEPLOY_TOKEN").describe("API token"),
+    token: { type: "string", env: "DEPLOY_TOKEN", description: "API token" },
   },
   action({ options }) {
     // Uses --token flag, or DEPLOY_TOKEN env var
@@ -173,7 +173,7 @@ myapp deploy --token=secret
 const deploy = defineCommand({
   name: "deploy",
   options: {
-    env: option.string().required().describe("Target environment"),
+    env: { type: "string", required: true, description: "Target environment" },
   },
   action({ options }) {
     console.log(`Deploying to ${options.env}`);
@@ -189,7 +189,7 @@ By default, the option name becomes the long flag. Customize it:
 const build = defineCommand({
   name: "build",
   options: {
-    dryRun: option.boolean().long("dry-run").describe("Simulate build"),
+    dryRun: { type: "boolean", long: "dry-run", description: "Simulate build" },
   },
   action({ options }) {
     if (options.dryRun) console.log("Dry run mode");
@@ -209,8 +209,8 @@ Define options available to all commands:
 const cli = defineCli({
   name: "myapp",
   globalOptions: {
-    verbose: option.boolean().short("v").describe("Verbose output"),
-    config: option.string().short("c").describe("Config file path"),
+    verbose: { type: "boolean", short: "v", description: "Verbose output" },
+    config: { type: "string", short: "c", description: "Config file path" },
   },
   commands: { build, serve },
 });
@@ -221,32 +221,29 @@ myapp build --verbose
 myapp serve --config=prod.json
 ```
 
-## Argument Methods
+## Argument Properties
 
-| Method                 | Description            |
-| ---------------------- | ---------------------- |
-| `.string()`            | String type            |
-| `.number()`            | Number type            |
-| `.required()`          | Mark as required       |
-| `.default(value)`      | Set default value      |
-| `.variadic()`          | Accept multiple values |
-| `.describe(text)`      | Help text              |
-| `.validate(validator)` | Add validation         |
+| Property      | Type        | Description              |
+| ------------- | ----------- | ------------------------ |
+| `type`        | `string`    | `"string"` or `"number"` |
+| `required`    | `boolean`   | Mark as required         |
+| `default`     | `T`         | Default value            |
+| `variadic`    | `boolean`   | Accept multiple values   |
+| `description` | `string`    | Help text                |
+| `validate`    | `Validator` | Add validation           |
 
-## Option Methods
+## Option Properties
 
-| Method                 | Description        |
-| ---------------------- | ------------------ |
-| `.string()`            | String type        |
-| `.number()`            | Number type        |
-| `.boolean()`           | Boolean flag       |
-| `.short(char)`         | Short flag (-x)    |
-| `.long(name)`          | Long flag (--name) |
-| `.default(value)`      | Default value      |
-| `.required()`          | Mark as required   |
-| `.env(name)`           | Env var fallback   |
-| `.describe(text)`      | Help text          |
-| `.validate(validator)` | Add validation     |
+| Property      | Type        | Description                            |
+| ------------- | ----------- | -------------------------------------- |
+| `type`        | `string`    | `"string"`, `"number"`, or `"boolean"` |
+| `short`       | `string`    | Short flag (-x)                        |
+| `long`        | `string`    | Long flag (--name)                     |
+| `default`     | `T`         | Default value                          |
+| `required`    | `boolean`   | Mark as required                       |
+| `env`         | `string`    | Env var fallback                       |
+| `description` | `string`    | Help text                              |
+| `validate`    | `Validator` | Add validation                         |
 
 ## Next Steps
 

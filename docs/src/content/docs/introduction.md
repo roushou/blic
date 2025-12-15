@@ -34,16 +34,16 @@ Boune is designed to take full advantage of Bun's capabilities:
 ## Quick Example
 
 ```typescript
-import { defineCli, defineCommand, argument, option } from "boune";
+import { defineCli, defineCommand } from "boune";
 
 const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
   },
   action({ args, options }) {
     const message = `Hello, ${args.name}!`;

@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import type { OptionDef } from "../src/types/index.ts";
+import type { InternalOptionDef } from "../src/types/index.ts";
 import { parseOptions } from "../src/parser/options.ts";
 import { tokenize } from "../src/parser/tokenizer.ts";
 
 describe("parseOptions", () => {
   test("parses boolean flags", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "verbose", short: "v", description: "Verbose", type: "boolean", required: false },
     ];
     const tokens = tokenize(["--verbose"]);
@@ -15,7 +15,7 @@ describe("parseOptions", () => {
   });
 
   test("parses short boolean flags", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "verbose", short: "v", description: "Verbose", type: "boolean", required: false },
     ];
     const tokens = tokenize(["-v"]);
@@ -25,7 +25,7 @@ describe("parseOptions", () => {
   });
 
   test("parses string options", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "output", short: "o", description: "Output", type: "string", required: false },
     ];
     const tokens = tokenize(["--output", "dist"]);
@@ -35,7 +35,7 @@ describe("parseOptions", () => {
   });
 
   test("parses string options with equals", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "output", short: "o", description: "Output", type: "string", required: false },
     ];
     const tokens = tokenize(["--output=dist"]);
@@ -45,7 +45,7 @@ describe("parseOptions", () => {
   });
 
   test("parses number options", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "port", short: "p", description: "Port", type: "number", required: false },
     ];
     const tokens = tokenize(["--port", "3000"]);
@@ -55,7 +55,7 @@ describe("parseOptions", () => {
   });
 
   test("applies default values", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "port", description: "Port", type: "number", required: false, default: 8080 },
     ];
     const tokens = tokenize([]);
@@ -65,7 +65,7 @@ describe("parseOptions", () => {
   });
 
   test("reports missing required options", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "config", description: "Config", type: "string", required: true },
     ];
     const tokens = tokenize([]);
@@ -75,7 +75,7 @@ describe("parseOptions", () => {
   });
 
   test("reports unknown options", () => {
-    const defs: OptionDef[] = [];
+    const defs: InternalOptionDef[] = [];
     const tokens = tokenize(["--unknown"]);
     const { errors } = parseOptions(tokens, defs);
     expect(errors.length).toBe(1);
@@ -83,14 +83,14 @@ describe("parseOptions", () => {
   });
 
   test("allows unknown options when configured", () => {
-    const defs: OptionDef[] = [];
+    const defs: InternalOptionDef[] = [];
     const tokens = tokenize(["--unknown"]);
     const { errors } = parseOptions(tokens, defs, true);
     expect(errors).toEqual([]);
   });
 
   test("returns remaining tokens", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "verbose", short: "v", description: "Verbose", type: "boolean", required: false },
     ];
     const tokens = tokenize(["-v", "build", "src"]);
@@ -99,7 +99,7 @@ describe("parseOptions", () => {
   });
 
   test("handles -- separator", () => {
-    const defs: OptionDef[] = [
+    const defs: InternalOptionDef[] = [
       { name: "verbose", short: "v", description: "Verbose", type: "boolean", required: false },
     ];
     const tokens = tokenize(["-v", "--", "--not-an-option"]);

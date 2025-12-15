@@ -32,6 +32,7 @@ function createTestConfig(): CliConfig {
     ],
     subcommands: {},
     hidden: false,
+    prompts: {},
   };
 
   const serveCommand: CommandConfig = {
@@ -51,6 +52,7 @@ function createTestConfig(): CliConfig {
     ],
     subcommands: {},
     hidden: false,
+    prompts: {},
   };
 
   const hiddenCommand: CommandConfig = {
@@ -61,6 +63,7 @@ function createTestConfig(): CliConfig {
     options: [],
     subcommands: {},
     hidden: true,
+    prompts: {},
   };
 
   const configSubGet: CommandConfig = {
@@ -79,6 +82,7 @@ function createTestConfig(): CliConfig {
     ],
     subcommands: {},
     hidden: false,
+    prompts: {},
   };
 
   const configSubSet: CommandConfig = {
@@ -89,6 +93,7 @@ function createTestConfig(): CliConfig {
     options: [],
     subcommands: {},
     hidden: false,
+    prompts: {},
   };
 
   const configCommand: CommandConfig = {
@@ -102,6 +107,7 @@ function createTestConfig(): CliConfig {
       set: configSubSet,
     },
     hidden: false,
+    prompts: {},
   };
 
   return {
@@ -426,6 +432,7 @@ describe("edge cases", () => {
       options: [],
       subcommands: {},
       hidden: true,
+      prompts: {},
     };
 
     const parentCmd: CommandConfig = {
@@ -438,6 +445,7 @@ describe("edge cases", () => {
         secret: hiddenSub,
       },
       hidden: false,
+      prompts: {},
     };
 
     const config: CliConfig = {

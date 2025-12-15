@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test";
-
-import { argument } from "../src/schema/argument.ts";
 import { defineCommand } from "../src/define/index.ts";
-import { option } from "../src/schema/option.ts";
 
 describe("defineCommand", () => {
   test("creates a command with name", () => {
@@ -32,7 +29,7 @@ describe("defineCommand", () => {
     const config = defineCommand({
       name: "greet",
       arguments: {
-        name: argument.string().required().describe("Name to greet"),
+        name: { type: "string", required: true, description: "Name to greet" },
       },
     });
     expect(config.arguments).toEqual([
@@ -52,7 +49,7 @@ describe("defineCommand", () => {
     const config = defineCommand({
       name: "greet",
       arguments: {
-        name: argument.string().default("World").describe("Name to greet"),
+        name: { type: "string", default: "World", description: "Name to greet" },
       },
     });
     expect(config.arguments).toEqual([
@@ -72,7 +69,12 @@ describe("defineCommand", () => {
     const config = defineCommand({
       name: "cat",
       arguments: {
-        files: argument.string().required().variadic().describe("Files to concatenate"),
+        files: {
+          type: "string",
+          required: true,
+          variadic: true,
+          description: "Files to concatenate",
+        },
       },
     });
     expect(config.arguments).toEqual([
@@ -92,7 +94,7 @@ describe("defineCommand", () => {
     const config = defineCommand({
       name: "build",
       options: {
-        verbose: option.boolean().short("v").describe("Verbose output"),
+        verbose: { type: "boolean", short: "v", description: "Verbose output" },
       },
     });
     expect(config.options).toEqual([
@@ -114,7 +116,7 @@ describe("defineCommand", () => {
     const config = defineCommand({
       name: "build",
       options: {
-        output: option.string().short("o").describe("Output directory"),
+        output: { type: "string", short: "o", description: "Output directory" },
       },
     });
     expect(config.options).toEqual([
@@ -136,7 +138,7 @@ describe("defineCommand", () => {
     const config = defineCommand({
       name: "serve",
       options: {
-        port: option.number().short("p").env("PORT").default(3000).describe("Port"),
+        port: { type: "number", short: "p", env: "PORT", default: 3000, description: "Port" },
       },
     });
     expect(config.options).toEqual([
@@ -221,11 +223,11 @@ describe("defineCommand", () => {
       description: "Build the project",
       aliases: ["b"],
       arguments: {
-        entry: argument.string().required().describe("Entry file"),
+        entry: { type: "string", required: true, description: "Entry file" },
       },
       options: {
-        output: option.string().short("o").describe("Output directory"),
-        watch: option.boolean().short("w").describe("Watch mode"),
+        output: { type: "string", short: "o", description: "Output directory" },
+        watch: { type: "boolean", short: "w", description: "Watch mode" },
       },
       action: ({ args, options }) => {
         console.log(args, options);

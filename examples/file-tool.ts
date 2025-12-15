@@ -4,12 +4,10 @@
  * File manipulation CLI demonstrating Bun-specific APIs
  */
 import {
-  argument,
   color,
   createSpinner,
   defineCli,
   defineCommand,
-  option,
   table,
 } from "../packages/boune/src/index.ts";
 
@@ -19,12 +17,12 @@ const list = defineCommand({
   description: "List files in a directory",
   aliases: ["ls"],
   arguments: {
-    path: argument.string().default(".").describe("Directory to list"),
+    path: { type: "string", default: ".", description: "Directory to list" },
   },
   options: {
-    all: option.boolean().short("a").describe("Include hidden files"),
-    long: option.boolean().short("l").describe("Use long listing format"),
-    human: option.boolean().short("h").describe("Human-readable sizes"),
+    all: { type: "boolean", short: "a", description: "Include hidden files" },
+    long: { type: "boolean", short: "l", description: "Use long listing format" },
+    human: { type: "boolean", short: "h", description: "Human-readable sizes" },
   },
   async action({ args, options }) {
     const glob = new Bun.Glob(options.all ? "{*,.*}" : "*");
@@ -62,12 +60,12 @@ const read = defineCommand({
   description: "Read and display file contents",
   aliases: ["cat"],
   arguments: {
-    file: argument.string().required().describe("File to read"),
+    file: { type: "string", required: true, description: "File to read" },
   },
   options: {
-    lines: option.boolean().short("n").describe("Show line numbers"),
-    head: option.number().describe("Show only first N lines"),
-    tail: option.number().describe("Show only last N lines"),
+    lines: { type: "boolean", short: "n", description: "Show line numbers" },
+    head: { type: "number", description: "Show only first N lines" },
+    tail: { type: "number", description: "Show only last N lines" },
   },
   async action({ args, options }) {
     const file = Bun.file(args.file);
@@ -101,11 +99,11 @@ const copy = defineCommand({
   description: "Copy files",
   aliases: ["cp"],
   arguments: {
-    source: argument.string().required().describe("Source file"),
-    dest: argument.string().required().describe("Destination"),
+    source: { type: "string", required: true, description: "Source file" },
+    dest: { type: "string", required: true, description: "Destination" },
   },
   options: {
-    force: option.boolean().short("f").describe("Overwrite existing files"),
+    force: { type: "boolean", short: "f", description: "Overwrite existing files" },
   },
   async action({ args, options }) {
     const sourceFile = Bun.file(args.source);
@@ -134,14 +132,14 @@ const search = defineCommand({
   description: "Search for pattern in files",
   aliases: ["grep"],
   arguments: {
-    pattern: argument.string().required().describe("Pattern to search for"),
-    path: argument.string().default(".").describe("Directory to search"),
+    pattern: { type: "string", required: true, description: "Pattern to search for" },
+    path: { type: "string", default: ".", description: "Directory to search" },
   },
   options: {
-    ignoreCase: option.boolean().short("i").describe("Case-insensitive search"),
-    recursive: option.boolean().short("r").describe("Search recursively"),
-    lineNumber: option.boolean().short("n").describe("Show line numbers"),
-    glob: option.string().default("**/*").describe("File pattern to match"),
+    ignoreCase: { type: "boolean", short: "i", description: "Case-insensitive search" },
+    recursive: { type: "boolean", short: "r", description: "Search recursively" },
+    lineNumber: { type: "boolean", short: "n", description: "Show line numbers" },
+    glob: { type: "string", default: "**/*", description: "File pattern to match" },
   },
   async action({ args, options }) {
     const regex = new RegExp(args.pattern, options.ignoreCase ? "gi" : "g");
@@ -183,7 +181,7 @@ const info = defineCommand({
   name: "info",
   description: "Show file information",
   arguments: {
-    file: argument.string().required().describe("File to inspect"),
+    file: { type: "string", required: true, description: "File to inspect" },
   },
   async action({ args }) {
     const file = Bun.file(args.file);

@@ -2,7 +2,7 @@
  * Bash completion script generator
  */
 
-import type { CliConfig, CommandConfig, OptionDef } from "../types/index.ts";
+import type { CliConfig, CommandConfig, InternalOptionDef } from "../types/index.ts";
 
 /**
  * Generate bash completion script for a CLI
@@ -76,7 +76,7 @@ export function generateBashCompletion(config: CliConfig): string {
   return lines.join("\n");
 }
 
-function formatBashOption(option: OptionDef): string {
+function formatBashOption(option: InternalOptionDef): string {
   const parts: string[] = [];
   if (option.short) parts.push(`-${option.short}`);
   const longFlag = option.long ?? option.name;

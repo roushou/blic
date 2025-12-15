@@ -2,7 +2,18 @@
  * Type exports for the boune CLI framework
  */
 
-export type { Kind, InferKind, ArgumentDef, OptionDef, ParsedArgs, ParsedOptions } from "./core.ts";
+export type {
+  Kind,
+  InferKind,
+  InternalArgumentDef,
+  InternalOptionDef,
+  ParsedArgs,
+  ParsedOptions,
+} from "./core.ts";
+
+export type { ArgumentDefinition, InferArgType, InferArgs } from "./argument.ts";
+
+export type { OptionDefinition, InferOptType, InferOpts } from "./option.ts";
 
 export type {
   ActionContext,
@@ -13,7 +24,7 @@ export type {
   PromptsRecord,
 } from "./handlers.ts";
 
-export type { InferArgs, InferOpts, CommandConfig, CommandSchema } from "./command.ts";
+export type { CommandConfig, CommandSchema } from "./command.ts";
 
 export type { CliConfig, CliSchema } from "./cli.ts";
 

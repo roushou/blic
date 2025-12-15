@@ -4,17 +4,18 @@
 
 import type { CommandConfig, CommandSchema } from "./command.ts";
 import type { ErrorHandler, MiddlewareHandler } from "./handlers.ts";
-import type { Kind, OptionDef } from "./core.ts";
-import type { ArgBuilder } from "../schema/argument.ts";
-import type { OptBuilder } from "../schema/option.ts";
+import type { ArgumentDefinition } from "./argument.ts";
+import type { InternalOptionDef } from "./core.ts";
+import type { OptionDefinition } from "./option.ts";
+import type { PromptDefinition } from "./prompt.ts";
 
-/** CLI configuration */
+/** CLI configuration (internal, normalized) */
 export interface CliConfig {
   name: string;
   version: string;
   description: string;
   commands: Record<string, CommandConfig>;
-  globalOptions: OptionDef[];
+  globalOptions: InternalOptionDef[];
   /** Global middleware to run before any command */
   middleware?: MiddlewareHandler[];
   /** Global error handler */
@@ -35,7 +36,7 @@ export interface CliConfig {
  *     serve: serveCommand,
  *   },
  *   globalOptions: {
- *     verbose: option.boolean().short("v"),
+ *     verbose: { type: "boolean", short: "v" },
  *   },
  * });
  * ```
@@ -52,13 +53,14 @@ export interface CliSchema {
     | Record<
         string,
         CommandSchema<
-          Record<string, ArgBuilder<unknown, Kind>>,
-          Record<string, OptBuilder<unknown, Kind>>
+          Record<string, ArgumentDefinition>,
+          Record<string, OptionDefinition>,
+          Record<string, PromptDefinition>
         >
       >
     | Record<string, CommandConfig>;
   /** Global options available to all commands */
-  globalOptions?: Record<string, OptBuilder<unknown, Kind>>;
+  globalOptions?: Record<string, OptionDefinition>;
   /** Global middleware */
   middleware?: MiddlewareHandler[];
   /** Global error handler */

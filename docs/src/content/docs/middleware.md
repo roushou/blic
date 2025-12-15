@@ -188,7 +188,7 @@ const cli = defineCli({
 Complete CLI with middleware:
 
 ```typescript
-import { defineCli, defineCommand, option } from "boune";
+import { defineCli, defineCommand } from "boune";
 import type { MiddlewareHandler } from "boune";
 
 // Middleware
@@ -219,7 +219,7 @@ const deploy = defineCommand({
   name: "deploy",
   description: "Deploy the application",
   options: {
-    env: option.string().required().describe("Target environment"),
+    env: { type: "string", required: true, description: "Target environment" },
   },
   async action({ options }) {
     console.log(`Deploying to ${options.env}...`);
@@ -233,7 +233,7 @@ const cli = defineCli({
   name: "myapp",
   version: "1.0.0",
   globalOptions: {
-    verbose: option.boolean().short("v").describe("Verbose output"),
+    verbose: { type: "boolean", short: "v", description: "Verbose output" },
   },
   commands: { deploy },
   middleware: [timing, auth],

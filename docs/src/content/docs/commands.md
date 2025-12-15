@@ -30,9 +30,13 @@ const build = defineCommand({
 | `aliases`     | `string[]` | Alternative names       |
 | `arguments`   | `object`   | Positional arguments    |
 | `options`     | `object`   | Command options/flags   |
+| `prompts`     | `object`   | Interactive prompts     |
 | `action`      | `function` | Handler function        |
 | `subcommands` | `object`   | Nested commands         |
 | `hidden`      | `boolean`  | Hide from help          |
+| `before`      | `array`    | Before middleware       |
+| `after`       | `array`    | After middleware        |
+| `onError`     | `function` | Error handler           |
 
 ## Registering Commands
 
@@ -88,8 +92,8 @@ const remoteAdd = defineCommand({
   name: "add",
   description: "Add a remote",
   arguments: {
-    name: argument.string().required(),
-    url: argument.string().required(),
+    name: { type: "string", required: true },
+    url: { type: "string", required: true },
   },
   action({ args }) {
     console.log(`Added remote ${args.name} -> ${args.url}`);
@@ -100,7 +104,7 @@ const remoteRemove = defineCommand({
   name: "remove",
   aliases: ["rm"],
   arguments: {
-    name: argument.string().required(),
+    name: { type: "string", required: true },
   },
   action({ args }) {
     console.log(`Removed remote ${args.name}`);
@@ -145,21 +149,25 @@ const deploy = defineCommand({
 
 ## Context Object
 
-The action receives a context with parsed args and options:
+The action receives a context with parsed args, options, and prompts:
 
 ```typescript
 const greet = defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().required(),
+    name: { type: "string", required: true },
   },
   options: {
-    loud: option.boolean(),
+    loud: { type: "boolean" },
   },
-  action(ctx) {
+  prompts: {
+    confirm: { kind: "confirm", message: "Are you sure?" },
+  },
+  async action(ctx) {
     // ctx.args.name - typed as string
     // ctx.options.loud - typed as boolean
-    // ctx.command - the command config
+    // ctx.prompts.confirm.run() - returns Promise<boolean>
+    // ctx.rawArgs - original argv array
     console.log(`Hello, ${ctx.args.name}!`);
   },
 });

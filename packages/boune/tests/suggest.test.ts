@@ -43,6 +43,7 @@ describe("suggestCommands", () => {
     options: [],
     subcommands: {},
     hidden: false,
+    prompts: {},
   });
 
   const buildCmd = createCommand("build", "Build the project", ["b"]);

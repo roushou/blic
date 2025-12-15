@@ -721,20 +721,16 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
     // ---------------------------------------------------------
     const codeExamples: Record<string, string> = {
       basic: `<span class="code-comment">// Define a simple CLI with commands</span>
-<span class="code-keyword">import</span> { defineCli, defineCommand, argument, option } <span class="code-keyword">from</span> <span class="code-string">"boune"</span>;
+<span class="code-keyword">import</span> { defineCli, defineCommand } <span class="code-keyword">from</span> <span class="code-string">"boune"</span>;
 
 <span class="code-keyword">const</span> deploy = <span class="code-func">defineCommand</span>({
   name: <span class="code-string">"deploy"</span>,
   description: <span class="code-string">"Deploy the application"</span>,
   arguments: {
-    env: argument.<span class="code-func">string</span>()
-      .<span class="code-func">required</span>()
-      .<span class="code-func">describe</span>(<span class="code-string">"Target environment"</span>),
+    env: { type: <span class="code-string">"string"</span>, required: <span class="code-keyword">true</span>, description: <span class="code-string">"Target environment"</span> },
   },
   options: {
-    force: option.<span class="code-func">boolean</span>()
-      .<span class="code-func">short</span>(<span class="code-string">"f"</span>)
-      .<span class="code-func">describe</span>(<span class="code-string">"Skip confirmation"</span>),
+    force: { type: <span class="code-string">"boolean"</span>, short: <span class="code-string">"f"</span>, description: <span class="code-string">"Skip confirmation"</span> },
   },
   <span class="code-keyword">async</span> <span class="code-func">action</span>({ args, options }) {
     console.<span class="code-func">log</span>(<span class="code-string">\`Deploying to \${args.env}...\`</span>);
@@ -749,33 +745,31 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
 
 cli.<span class="code-func">run</span>();`,
 
-      prompts: `<span class="code-comment">// Interactive prompts for user input</span>
-<span class="code-keyword">import</span> { text, select, confirm, password } <span class="code-keyword">from</span> <span class="code-string">"boune/prompt"</span>;
+      prompts: `<span class="code-comment">// Declarative prompts in commands</span>
+<span class="code-keyword">import</span> { defineCommand } <span class="code-keyword">from</span> <span class="code-string">"boune"</span>;
 
-<span class="code-comment">// Text input</span>
-<span class="code-keyword">const</span> name = <span class="code-keyword">await</span> <span class="code-func">text</span>({
-  message: <span class="code-string">"What is your name?"</span>,
-  placeholder: <span class="code-string">"Enter your name"</span>,
-});
-
-<span class="code-comment">// Select from options</span>
-<span class="code-keyword">const</span> framework = <span class="code-keyword">await</span> <span class="code-func">select</span>({
-  message: <span class="code-string">"Pick a framework"</span>,
-  options: [
-    { value: <span class="code-string">"react"</span>, label: <span class="code-string">"React"</span> },
-    { value: <span class="code-string">"vue"</span>, label: <span class="code-string">"Vue"</span> },
-    { value: <span class="code-string">"svelte"</span>, label: <span class="code-string">"Svelte"</span> },
-  ],
-});
-
-<span class="code-comment">// Confirmation</span>
-<span class="code-keyword">const</span> shouldContinue = <span class="code-keyword">await</span> <span class="code-func">confirm</span>({
-  message: <span class="code-string">"Continue with setup?"</span>,
-});
-
-<span class="code-comment">// Password (hidden input)</span>
-<span class="code-keyword">const</span> token = <span class="code-keyword">await</span> <span class="code-func">password</span>({
-  message: <span class="code-string">"Enter your API token"</span>,
+<span class="code-keyword">const</span> init = <span class="code-func">defineCommand</span>({
+  name: <span class="code-string">"init"</span>,
+  description: <span class="code-string">"Initialize a new project"</span>,
+  prompts: {
+    name: { kind: <span class="code-string">"text"</span>, message: <span class="code-string">"Project name:"</span>, default: <span class="code-string">"my-project"</span> },
+    framework: {
+      kind: <span class="code-string">"select"</span>,
+      message: <span class="code-string">"Pick a framework"</span>,
+      options: [
+        { value: <span class="code-string">"react"</span>, label: <span class="code-string">"React"</span> },
+        { value: <span class="code-string">"vue"</span>, label: <span class="code-string">"Vue"</span> },
+        { value: <span class="code-string">"svelte"</span>, label: <span class="code-string">"Svelte"</span> },
+      ],
+    },
+    useTypeScript: { kind: <span class="code-string">"confirm"</span>, message: <span class="code-string">"Use TypeScript?"</span>, default: <span class="code-keyword">true</span> },
+  },
+  <span class="code-keyword">async</span> <span class="code-func">action</span>({ prompts }) {
+    <span class="code-keyword">const</span> name = <span class="code-keyword">await</span> prompts.name.<span class="code-func">run</span>();
+    <span class="code-keyword">const</span> framework = <span class="code-keyword">await</span> prompts.framework.<span class="code-func">run</span>();
+    <span class="code-keyword">const</span> ts = <span class="code-keyword">await</span> prompts.useTypeScript.<span class="code-func">run</span>();
+    console.<span class="code-func">log</span>(<span class="code-string">\`Creating \${name} with \${framework}...\`</span>);
+  },
 });`,
 
       middleware: `<span class="code-comment">// Add middleware for cross-cutting concerns</span>

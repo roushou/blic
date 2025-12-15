@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { argument, color, defineCli, defineCommand, option } from "../packages/boune/src/index.ts";
+import { color, defineCli, defineCommand } from "../packages/boune/src/index.ts";
 import type { MiddlewareHandler } from "../packages/boune/src/types";
 
 // Timing middleware - wraps around command execution
@@ -19,11 +19,11 @@ const deploy = defineCommand({
   name: "deploy",
   description: "Deploy the application",
   arguments: {
-    env: argument.string().required().describe("Environment (staging, production)"),
+    env: { type: "string", required: true, description: "Environment (staging, production)" },
   },
   options: {
-    force: option.boolean().short("f").describe("Skip confirmation"),
-    dryRun: option.boolean().long("dry-run").describe("Show what would be deployed"),
+    force: { type: "boolean", short: "f", description: "Skip confirmation" },
+    dryRun: { type: "boolean", long: "dry-run", description: "Show what would be deployed" },
   },
   before: [
     async (ctx, next) => {
@@ -75,7 +75,7 @@ const hello = defineCommand({
   name: "hello",
   description: "Simple hello command",
   arguments: {
-    name: argument.string().default("World").describe("Name to greet"),
+    name: { type: "string", default: "World", description: "Name to greet" },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`);

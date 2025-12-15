@@ -1,7 +1,5 @@
 import { defineCli, defineCommand } from "../src/define/index.ts";
 import { describe, expect, mock, test } from "bun:test";
-import { argument } from "../src/schema/argument.ts";
-import { option } from "../src/schema/option.ts";
 import { testCli } from "../src/testing/index.ts";
 
 describe("defineCli", () => {
@@ -63,7 +61,7 @@ describe("defineCli", () => {
         greet: {
           name: "greet",
           arguments: {
-            name: argument.string().required().describe("Name"),
+            name: { type: "string", required: true, description: "Name" },
           },
           action: (ctx) => {
             receivedContext = ctx;
@@ -86,7 +84,7 @@ describe("defineCli", () => {
         serve: {
           name: "serve",
           options: {
-            port: option.number().short("p").default(3000).describe("Port"),
+            port: { type: "number", short: "p", default: 3000, description: "Port" },
           },
           action: (ctx) => {
             receivedContext = ctx;
@@ -327,7 +325,7 @@ describe("defineCli", () => {
     const app = defineCli({
       name: "myapp",
       globalOptions: {
-        verbose: option.boolean().short("v").describe("Verbose output"),
+        verbose: { type: "boolean", short: "v", description: "Verbose output" },
       },
       commands: {
         build: {

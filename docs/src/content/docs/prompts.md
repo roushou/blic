@@ -3,90 +3,113 @@ title: Prompts
 description: Create interactive CLI experiences with built-in prompts.
 ---
 
-Boune includes a complete set of interactive prompts for gathering user input.
+Boune includes a complete set of interactive prompts for gathering user input. Prompts can be defined declaratively in your commands or used standalone.
 
-## Text Input
+## Declarative Prompts
 
-Basic text input with optional defaults and validation:
-
-```typescript
-import { text } from "boune/prompt";
-
-const name = await text({
-  message: "What is your name?",
-  default: "World",
-  placeholder: "Enter your name",
-});
-
-console.log(`Hello, ${name}!`);
-```
-
-### With Validation
+Define prompts directly in your command and run them lazily:
 
 ```typescript
-import { text } from "boune/prompt";
-import { v } from "boune";
+import { defineCommand } from "boune";
 
-const email = await text({
-  message: "Enter your email:",
-  validator: v.string().email(),
-});
-```
+const init = defineCommand({
+  name: "init",
+  description: "Initialize a new project",
+  prompts: {
+    name: { kind: "text", message: "Project name:", default: "my-project" },
+    template: {
+      kind: "select",
+      message: "Choose a template:",
+      options: [
+        { label: "Basic", value: "basic" },
+        { label: "Full", value: "full", hint: "With tests and linting" },
+      ] as const,
+      default: "basic",
+    },
+    useGit: { kind: "confirm", message: "Initialize git?", default: true },
+  },
+  async action({ prompts }) {
+    const name = await prompts.name.run();
+    const template = await prompts.template.run();
+    const useGit = await prompts.useGit.run();
 
-Or with a custom validation function:
-
-```typescript
-const username = await text({
-  message: "Choose a username:",
-  validate: (value) => {
-    if (value.length < 3) return "Username must be at least 3 characters";
-    if (!/^[a-z0-9_]+$/.test(value)) return "Only lowercase letters, numbers, and underscores";
-    return true;
+    console.log(`Creating ${name} with ${template} template...`);
+    if (useGit) console.log("Initializing git...");
   },
 });
 ```
 
-## Number Input
+## Prompt Types
+
+### Text
+
+Basic text input with optional defaults and validation:
+
+```typescript
+prompts: {
+  name: {
+    kind: "text",
+    message: "What is your name?",
+    default: "World",
+    placeholder: "Enter your name",
+  },
+}
+```
+
+#### With Validation
+
+```typescript
+import { v } from "boune";
+
+prompts: {
+  email: {
+    kind: "text",
+    message: "Enter your email:",
+    validator: v.string().email(),
+  },
+}
+```
+
+### Number
 
 Prompt for numeric values with constraints:
 
 ```typescript
-import { number } from "boune/prompt";
-
-const port = await number({
-  message: "Port number:",
-  default: 3000,
-  min: 1,
-  max: 65535,
-  integer: true,
-});
+prompts: {
+  port: {
+    kind: "number",
+    message: "Port number:",
+    default: 3000,
+    min: 1,
+    max: 65535,
+    integer: true,
+  },
+}
 ```
 
-### Options
+#### Properties
 
-| Option      | Type        | Description           |
+| Property    | Type        | Description           |
 | ----------- | ----------- | --------------------- |
 | `message`   | `string`    | Prompt message        |
 | `default`   | `number`    | Default value         |
 | `min`       | `number`    | Minimum allowed value |
 | `max`       | `number`    | Maximum allowed value |
 | `integer`   | `boolean`   | Only allow integers   |
+| `step`      | `number`    | Increment step        |
 | `validator` | `Validator` | Custom validator      |
 
-## Confirm
+### Confirm
 
 Yes/no confirmation:
 
 ```typescript
-import { confirm } from "boune/prompt";
-
-const proceed = await confirm({
-  message: "Deploy to production?",
-  default: false,
-});
-
-if (proceed) {
-  console.log("Deploying...");
+prompts: {
+  proceed: {
+    kind: "confirm",
+    message: "Deploy to production?",
+    default: false,
+  },
 }
 ```
 
@@ -94,131 +117,120 @@ if (proceed) {
 ? Deploy to production? (y/N) y
 ```
 
-## Select
+### Select
 
 Single selection from a list:
 
 ```typescript
-import { select } from "boune/prompt";
-
-const framework = await select({
-  message: "Choose a framework:",
-  options: [
-    { label: "React", value: "react", hint: "Popular UI library" },
-    { label: "Vue", value: "vue", hint: "Progressive framework" },
-    { label: "Svelte", value: "svelte", hint: "Compiled framework" },
-    { label: "Angular", value: "angular" },
-  ],
-  default: "react",
-});
-
-console.log(`Selected: ${framework}`);
+prompts: {
+  framework: {
+    kind: "select",
+    message: "Choose a framework:",
+    options: [
+      { label: "React", value: "react", hint: "Popular UI library" },
+      { label: "Vue", value: "vue", hint: "Progressive framework" },
+      { label: "Svelte", value: "svelte", hint: "Compiled framework" },
+      { label: "Angular", value: "angular" },
+    ] as const,
+    default: "react",
+  },
+}
 ```
 
 Use arrow keys or `j`/`k` to navigate, Enter to select.
 
-## Multiselect
+### Multiselect
 
 Multiple selections:
 
 ```typescript
-import { multiselect } from "boune/prompt";
-
-const features = await multiselect({
-  message: "Select features to enable:",
-  options: [
-    { label: "TypeScript", value: "typescript" },
-    { label: "ESLint", value: "eslint" },
-    { label: "Prettier", value: "prettier" },
-    { label: "Testing", value: "testing" },
-  ],
-  min: 1,      // Require at least 1 selection
-  max: 3,      // Allow at most 3 selections
-});
-
-console.log(`Selected: ${features.join(", ")}`);
+prompts: {
+  features: {
+    kind: "multiselect",
+    message: "Select features to enable:",
+    options: [
+      { label: "TypeScript", value: "typescript" },
+      { label: "ESLint", value: "eslint" },
+      { label: "Prettier", value: "prettier" },
+      { label: "Testing", value: "testing" },
+    ] as const,
+    min: 1,  // Require at least 1 selection
+    max: 3,  // Allow at most 3 selections
+  },
+}
 ```
 
 Use Space to toggle selection, `a` to toggle all, Enter to confirm.
 
-## Password
+### Password
 
 Secure password input:
 
 ```typescript
-import { password } from "boune/prompt";
 import { v } from "boune";
 
-const secret = await password({
-  message: "Enter your API key:",
-  validator: v.string().minLength(10),
-});
+prompts: {
+  apiKey: {
+    kind: "password",
+    message: "Enter your API key:",
+    validator: v.string().minLength(10),
+  },
+}
 ```
 
-## Autocomplete
+### Autocomplete
 
 Searchable selection with fuzzy matching:
 
 ```typescript
-import { autocomplete } from "boune/prompt";
-
-const country = await autocomplete({
-  message: "Select a country:",
-  options: [
-    { label: "United States", value: "us" },
-    { label: "United Kingdom", value: "uk" },
-    { label: "Germany", value: "de" },
-    { label: "France", value: "fr" },
-    { label: "Japan", value: "jp" },
-    // ... more options
-  ],
-  limit: 5,           // Show 5 options at a time
-  allowCustom: false, // Only allow selecting from list
-});
-```
-
-### Custom Filter
-
-```typescript
-const item = await autocomplete({
-  message: "Search items:",
-  options: items,
-  filter: (input, option) => {
-    // Custom matching logic
-    return option.label.toLowerCase().startsWith(input.toLowerCase());
+prompts: {
+  country: {
+    kind: "autocomplete",
+    message: "Select a country:",
+    options: [
+      { label: "United States", value: "us" },
+      { label: "United Kingdom", value: "uk" },
+      { label: "Germany", value: "de" },
+      { label: "France", value: "fr" },
+      { label: "Japan", value: "jp" },
+    ],
+    limit: 5,           // Show 5 options at a time
+    allowCustom: false, // Only allow selecting from list
   },
-});
+}
 ```
 
-### Allow Custom Values
+#### Allow Custom Values
 
 ```typescript
-const tag = await autocomplete({
-  message: "Select or enter a tag:",
-  options: existingTags.map((t) => ({ label: t, value: t })),
-  allowCustom: true, // Allow typing new values
-});
+prompts: {
+  tag: {
+    kind: "autocomplete",
+    message: "Select or enter a tag:",
+    options: existingTags.map((t) => ({ label: t, value: t })),
+    allowCustom: true, // Allow typing new values
+  },
+}
 ```
 
-## File Path
+### Filepath
 
 Interactive file/directory browser:
 
 ```typescript
-import { filepath } from "boune/prompt";
-
-const file = await filepath({
-  message: "Select a config file:",
-  basePath: "./configs",
-  extensions: [".json", ".yaml", ".toml"],
-});
-
-console.log(`Selected: ${file}`);
+prompts: {
+  configFile: {
+    kind: "filepath",
+    message: "Select a config file:",
+    basePath: "./configs",
+    extensions: [".json", ".yaml", ".toml"],
+  },
+}
 ```
 
-### Options
+#### Properties
 
-| Option          | Type       | Description                       |
+| Property        | Type       | Description                       |
 | --------------- | ---------- | --------------------------------- |
 | `message`       | `string`   | Prompt message                    |
 | `basePath`      | `string`   | Starting directory (default: cwd) |
@@ -229,62 +241,97 @@ console.log(`Selected: ${file}`);
 | `showHidden`    | `boolean`  | Show dotfiles                     |
 | `limit`         | `number`   | Max visible items                 |
 
-### Directory Selection
+#### Directory Selection
 
 ```typescript
-const outputDir = await filepath({
-  message: "Select output directory:",
-  directoryOnly: true,
-});
+prompts: {
+  outputDir: {
+    kind: "filepath",
+    message: "Select output directory:",
+    directoryOnly: true,
+  },
+}
 ```
 
-### Create New File
+## Standalone Prompts
+
+You can also use prompts outside of commands:
 
 ```typescript
-const newFile = await filepath({
-  message: "Save as:",
-  basePath: "./output",
-  allowNew: true,
-  extensions: [".json"],
-});
-```
-
-## Using Prompts in Commands
-
-Combine prompts with commands for interactive CLIs:
-
-```typescript
-import { defineCommand } from "boune";
 import { text, select, confirm } from "boune/prompt";
 
-const init = defineCommand({
-  name: "init",
-  description: "Initialize a new project",
-  async action() {
-    const name = await text({
-      message: "Project name:",
-      default: "my-project",
-    });
+const name = await text({
+  message: "What is your name?",
+  default: "World",
+});
 
-    const template = await select({
-      message: "Choose a template:",
+const framework = await select({
+  message: "Choose a framework:",
+  options: [
+    { label: "React", value: "react" },
+    { label: "Vue", value: "vue" },
+  ],
+});
+
+const proceed = await confirm({
+  message: "Continue?",
+  default: true,
+});
+```
+
+## Conditional Prompts
+
+Run prompts conditionally based on previous answers:
+
+```typescript
+const setup = defineCommand({
+  name: "setup",
+  prompts: {
+    useDatabase: { kind: "confirm", message: "Use a database?", default: false },
+    dbType: {
+      kind: "select",
+      message: "Database type:",
       options: [
-        { label: "Basic", value: "basic" },
-        { label: "Full", value: "full" },
-      ],
-    });
+        { label: "PostgreSQL", value: "postgres" },
+        { label: "MySQL", value: "mysql" },
+        { label: "SQLite", value: "sqlite" },
+      ] as const,
+    },
+  },
+  async action({ prompts }) {
+    const useDatabase = await prompts.useDatabase.run();
 
-    const useGit = await confirm({
-      message: "Initialize git repository?",
-      default: true,
-    });
-
-    console.log(`Creating ${name} with ${template} template...`);
-    if (useGit) {
-      console.log("Initializing git...");
+    if (useDatabase) {
+      const dbType = await prompts.dbType.run();
+      console.log(`Setting up ${dbType}...`);
     }
   },
 });
+```
+
+## Arguments with Prompt Fallback
+
+Use prompts when arguments aren't provided:
+
+```typescript
+const greet = defineCommand({
+  name: "greet",
+  arguments: {
+    name: { type: "string", description: "Name to greet" },
+  },
+  prompts: {
+    name: { kind: "text", message: "What is your name?" },
+  },
+  async action({ args, prompts }) {
+    const name = args.name || (await prompts.name.run());
+    console.log(`Hello, ${name}!`);
+  },
+});
+```
+
+```bash
+myapp greet Alice  # Uses argument
+myapp greet        # Prompts for name
 ```
 
 ## Non-TTY Fallback

@@ -5,13 +5,11 @@
  */
 import {
   type ShellType,
-  argument,
   color,
   createProgressBar,
   createSpinner,
   defineCli,
   defineCommand,
-  option,
   v,
 } from "../packages/boune/src/index.ts";
 
@@ -20,11 +18,11 @@ const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
-    times: option.number().short("t").default(1).describe("Number of times to greet"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
+    times: { type: "number", short: "t", default: 1, description: "Number of times to greet" },
   },
   action({ args, options }) {
     for (let i = 0; i < options.times; i++) {
@@ -39,7 +37,7 @@ const buildWatch = defineCommand({
   name: "watch",
   description: "Watch for changes and rebuild",
   options: {
-    poll: option.boolean().short("p").describe("Use polling instead of native watchers"),
+    poll: { type: "boolean", short: "p", description: "Use polling instead of native watchers" },
   },
   action({ options }) {
     console.log(color.cyan("Watching for changes..."));
@@ -52,11 +50,11 @@ const build = defineCommand({
   description: "Build the project",
   aliases: ["b"],
   arguments: {
-    entry: argument.string().required().describe("Entry file"),
+    entry: { type: "string", required: true, description: "Entry file" },
   },
   options: {
-    output: option.string().short("o").default("dist").describe("Output directory"),
-    minify: option.boolean().short("m").describe("Minify output"),
+    output: { type: "string", short: "o", default: "dist", description: "Output directory" },
+    minify: { type: "boolean", short: "m", description: "Minify output" },
   },
   subcommands: {
     watch: buildWatch,
@@ -73,7 +71,6 @@ const build = defineCommand({
 const init = defineCommand({
   name: "init",
   description: "Initialize a new project",
-  // Declarative prompt definitions - executed via .run() in action
   prompts: {
     name: { kind: "text", message: "Project name:", default: "my-project" },
     template: {
@@ -91,15 +88,13 @@ const init = defineCommand({
   async action({ prompts }) {
     console.log(color.bold("\nProject Setup\n"));
 
-    // Prompts are executed explicitly via .run()
     const name = await prompts.name.run();
-    const template = await prompts.template.run(); // typed as "minimal" | "full" | "lib"
+    const template = await prompts.template.run();
     const useTypeScript = await prompts.useTypeScript.run();
 
     console.log(color.bold("\nCreating project..."));
     const spinner = createSpinner("Setting up files").start();
 
-    // Simulate work
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     spinner.succeed("Project created!");
@@ -115,24 +110,27 @@ const serve = defineCommand({
   name: "serve",
   description: "Start a development server",
   options: {
-    port: option
-      .number()
-      .short("p")
-      .default(3000)
-      .describe("Port to listen on")
-      .validate(v.number().integer().min(1).max(65535)),
-    host: option
-      .string()
-      .short("H")
-      .default("localhost")
-      .describe("Host to bind to")
-      .validate(v.string().oneOf(["localhost", "0.0.0.0", "127.0.0.1"])),
-    env: option
-      .string()
-      .short("e")
-      .default("development")
-      .describe("Environment")
-      .validate(v.string().oneOf(["development", "staging", "production"])),
+    port: {
+      type: "number",
+      short: "p",
+      default: 3000,
+      description: "Port to listen on",
+      validate: v.number().integer().min(1).max(65535),
+    },
+    host: {
+      type: "string",
+      short: "H",
+      default: "localhost",
+      description: "Host to bind to",
+      validate: v.string().oneOf(["localhost", "0.0.0.0", "127.0.0.1"]),
+    },
+    env: {
+      type: "string",
+      short: "e",
+      default: "development",
+      description: "Environment",
+      validate: v.string().oneOf(["development", "staging", "production"]),
+    },
   },
   action({ options }) {
     console.log(color.bold("\nStarting server...\n"));
@@ -148,7 +146,7 @@ const download = defineCommand({
   name: "download",
   description: "Simulate downloading files",
   arguments: {
-    count: argument.number().required().describe("Number of files to download"),
+    count: { type: "number", required: true, description: "Number of files to download" },
   },
   async action({ args }) {
     console.log(color.bold(`\nDownloading ${args.count} files...\n`));
@@ -169,14 +167,13 @@ const completions = defineCommand({
   name: "completions",
   description: "Generate shell completion scripts",
   arguments: {
-    shell: argument.string().required().describe("Shell type (bash, zsh, fish)"),
+    shell: { type: "string", required: true, description: "Shell type (bash, zsh, fish)" },
   },
   action({ args }) {
     if (!["bash", "zsh", "fish"].includes(args.shell)) {
       console.error(color.red(`Error: Invalid shell "${args.shell}". Use bash, zsh, or fish.`));
       process.exit(1);
     }
-    // Generate and output completion script
     const script = app.completions(args.shell as ShellType);
     console.log(script);
   },

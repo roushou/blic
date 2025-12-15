@@ -61,13 +61,13 @@ bun run cli.ts hello
 Make your command accept input:
 
 ```typescript
-import { defineCli, defineCommand, argument } from "boune";
+import { defineCli, defineCommand } from "boune";
 
 const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`);
@@ -93,17 +93,17 @@ bun run cli.ts greet Alice
 Add flags to modify behavior:
 
 ```typescript
-import { defineCli, defineCommand, argument, option } from "boune";
+import { defineCli, defineCommand } from "boune";
 
 const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
-    times: option.number().short("t").default(1).describe("Repeat count"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
+    times: { type: "number", short: "t", default: 1, description: "Repeat count" },
   },
   action({ args, options }) {
     for (let i = 0; i < options.times; i++) {

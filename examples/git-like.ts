@@ -3,18 +3,18 @@
 /**
  * Git-like CLI demonstrating subcommands and complex argument handling
  */
-import { argument, color, defineCli, defineCommand, option } from "../packages/boune/src/index.ts";
+import { color, defineCli, defineCommand } from "../packages/boune/src/index.ts";
 
 // git add <files...>
 const add = defineCommand({
   name: "add",
   description: "Add file contents to the index",
   arguments: {
-    files: argument.string().required().variadic().describe("Files to add"),
+    files: { type: "string", required: true, variadic: true, description: "Files to add" },
   },
   options: {
-    all: option.boolean().short("A").describe("Add all changes"),
-    patch: option.boolean().short("p").describe("Interactively choose hunks"),
+    all: { type: "boolean", short: "A", description: "Add all changes" },
+    patch: { type: "boolean", short: "p", description: "Interactively choose hunks" },
   },
   action({ args, options }) {
     if (options.all) {
@@ -33,9 +33,9 @@ const commit = defineCommand({
   name: "commit",
   description: "Record changes to the repository",
   options: {
-    message: option.string().short("m").describe("Commit message"),
-    all: option.boolean().short("a").describe("Automatically stage modified files"),
-    amend: option.boolean().describe("Amend previous commit"),
+    message: { type: "string", short: "m", description: "Commit message" },
+    all: { type: "boolean", short: "a", description: "Automatically stage modified files" },
+    amend: { type: "boolean", description: "Amend previous commit" },
   },
   action({ options }) {
     if (!options.message && !options.amend) {
@@ -54,7 +54,7 @@ const status = defineCommand({
   name: "status",
   description: "Show the working tree status",
   options: {
-    short: option.boolean().short("s").describe("Give output in short format"),
+    short: { type: "boolean", short: "s", description: "Give output in short format" },
   },
   action({ options }) {
     if (options.short) {
@@ -77,8 +77,8 @@ const log = defineCommand({
   name: "log",
   description: "Show commit logs",
   options: {
-    maxCount: option.number().short("n").default(10).describe("Limit number of commits"),
-    oneline: option.boolean().describe("Show each commit on one line"),
+    maxCount: { type: "number", short: "n", default: 10, description: "Limit number of commits" },
+    oneline: { type: "boolean", description: "Show each commit on one line" },
   },
   action({ options }) {
     const commits = [
@@ -109,11 +109,11 @@ const branch = defineCommand({
   name: "branch",
   description: "List, create, or delete branches",
   arguments: {
-    name: argument.string().describe("Branch name to create"),
+    name: { type: "string", description: "Branch name to create" },
   },
   options: {
-    delete: option.boolean().short("d").describe("Delete a branch"),
-    all: option.boolean().short("a").describe("List all branches"),
+    delete: { type: "boolean", short: "d", description: "Delete a branch" },
+    all: { type: "boolean", short: "a", description: "List all branches" },
   },
   action({ args, options }) {
     if (options.delete && args.name) {
@@ -137,8 +137,8 @@ const remoteAdd = defineCommand({
   name: "add",
   description: "Add a remote",
   arguments: {
-    name: argument.string().required().describe("Remote name"),
-    url: argument.string().required().describe("Remote URL"),
+    name: { type: "string", required: true, description: "Remote name" },
+    url: { type: "string", required: true, description: "Remote URL" },
   },
   action({ args }) {
     console.log(color.green(`Added remote ${args.name} -> ${args.url}`));
@@ -150,7 +150,7 @@ const remoteRemove = defineCommand({
   description: "Remove a remote",
   aliases: ["rm"],
   arguments: {
-    name: argument.string().required().describe("Remote name"),
+    name: { type: "string", required: true, description: "Remote name" },
   },
   action({ args }) {
     console.log(color.yellow(`Removed remote ${args.name}`));
@@ -161,7 +161,7 @@ const remote = defineCommand({
   name: "remote",
   description: "Manage remote repositories",
   options: {
-    verbose: option.boolean().short("v").describe("Show remote URLs"),
+    verbose: { type: "boolean", short: "v", description: "Show remote URLs" },
   },
   subcommands: {
     add: remoteAdd,

@@ -1,7 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { argument } from "../src/schema/argument.ts";
 import { defineCli } from "../src/define/index.ts";
-import { option } from "../src/schema/option.ts";
 import { testCli } from "../src/testing/index.ts";
 
 describe("testCli", () => {
@@ -179,7 +177,7 @@ describe("testCli", () => {
         deploy: {
           name: "deploy",
           arguments: {
-            target: argument.string().required(),
+            target: { type: "string", required: true },
           },
           action: (ctx) => {
             receivedArgs = ctx.args;
@@ -205,8 +203,8 @@ describe("testCli", () => {
         serve: {
           name: "serve",
           options: {
-            port: option.number().short("p").default(3000),
-            host: option.string().default("localhost"),
+            port: { type: "number", short: "p", default: 3000 },
+            host: { type: "string", default: "localhost" },
           },
           action: (ctx) => {
             receivedOptions = ctx.options;
@@ -280,14 +278,14 @@ describe("testCli", () => {
     expect(result.stdout).toContain("Line 3");
   });
 
-  test("supports env option from option builder", async () => {
+  test("supports env option from option definition", async () => {
     const cli = defineCli({
       name: "test",
       commands: {
         config: {
           name: "config",
           options: {
-            apiKey: option.string().env("API_KEY"),
+            apiKey: { type: "string", env: "API_KEY" },
           },
           action: (ctx) => {
             console.log(`Key: ${ctx.options.apiKey}`);

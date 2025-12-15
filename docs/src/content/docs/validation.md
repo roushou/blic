@@ -10,15 +10,22 @@ Boune provides a powerful validation system with chainable validators for argume
 Use the `v` factory to create validators:
 
 ```typescript
-import { defineCommand, argument, option, v } from "boune";
+import { defineCommand, v } from "boune";
 
 const deploy = defineCommand({
   name: "deploy",
   arguments: {
-    env: argument.string().required().validate(v.string().oneOf(["dev", "staging", "prod"])),
+    env: {
+      type: "string",
+      required: true,
+      validate: v.string().oneOf(["dev", "staging", "prod"]),
+    },
   },
   options: {
-    port: option.number().validate(v.number().min(1).max(65535)),
+    port: {
+      type: "number",
+      validate: v.number().min(1).max(65535),
+    },
   },
   action({ args, options }) {
     console.log(`Deploying to ${args.env} on port ${options.port}`);
@@ -54,7 +61,11 @@ v.string().oneOf(["small", "medium", "large"])
 const register = defineCommand({
   name: "register",
   arguments: {
-    email: argument.string().required().validate(v.string().email()),
+    email: {
+      type: "string",
+      required: true,
+      validate: v.string().email(),
+    },
   },
   action({ args }) {
     console.log(`Registering ${args.email}`);
@@ -73,7 +84,11 @@ myapp register user@test.com # Works
 const fetch = defineCommand({
   name: "fetch",
   arguments: {
-    url: argument.string().required().validate(v.string().url()),
+    url: {
+      type: "string",
+      required: true,
+      validate: v.string().url(),
+    },
   },
   action({ args }) {
     console.log(`Fetching ${args.url}`);
@@ -87,10 +102,11 @@ const fetch = defineCommand({
 const tag = defineCommand({
   name: "tag",
   arguments: {
-    version: argument
-      .string()
-      .required()
-      .validate(v.string().regex(/^v\d+\.\d+\.\d+$/, "Must be semantic version (v1.0.0)")),
+    version: {
+      type: "string",
+      required: true,
+      validate: v.string().regex(/^v\d+\.\d+\.\d+$/, "Must be semantic version (v1.0.0)"),
+    },
   },
   action({ args }) {
     console.log(`Creating tag ${args.version}`);
@@ -125,10 +141,11 @@ v.number().oneOf([80, 443, 8080])
 const serve = defineCommand({
   name: "serve",
   options: {
-    port: option
-      .number()
-      .default(3000)
-      .validate(v.number().integer().min(1).max(65535)),
+    port: {
+      type: "number",
+      default: 3000,
+      validate: v.number().integer().min(1).max(65535),
+    },
   },
   action({ options }) {
     console.log(`Listening on port ${options.port}`);
@@ -148,8 +165,16 @@ myapp serve --port 3.5    # Error: Must be an integer
 const resize = defineCommand({
   name: "resize",
   options: {
-    width: option.number().required().validate(v.number().positive().integer()),
-    height: option.number().required().validate(v.number().positive().integer()),
+    width: {
+      type: "number",
+      required: true,
+      validate: v.number().positive().integer(),
+    },
+    height: {
+      type: "number",
+      required: true,
+      validate: v.number().positive().integer(),
+    },
   },
   action({ options }) {
     console.log(`Resizing to ${options.width}x${options.height}`);
@@ -165,15 +190,15 @@ Chain multiple validations:
 const create = defineCommand({
   name: "create",
   arguments: {
-    name: argument
-      .string()
-      .required()
-      .validate(
-        v.string()
-          .minLength(3)
-          .maxLength(20)
-          .regex(/^[a-z][a-z0-9-]*$/, "Must start with letter, only lowercase, numbers, and hyphens")
-      ),
+    name: {
+      type: "string",
+      required: true,
+      validate: v
+        .string()
+        .minLength(3)
+        .maxLength(20)
+        .regex(/^[a-z][a-z0-9-]*$/, "Must start with letter, only lowercase, numbers, and hyphens"),
+    },
   },
   action({ args }) {
     console.log(`Creating ${args.name}`);
@@ -189,17 +214,16 @@ Use `refine` for custom logic:
 const upload = defineCommand({
   name: "upload",
   arguments: {
-    file: argument
-      .string()
-      .required()
-      .validate(
-        v.string().refine((path) => {
-          if (!path.endsWith(".json") && !path.endsWith(".yaml")) {
-            return "Must be a JSON or YAML file";
-          }
-          return true;
-        })
-      ),
+    file: {
+      type: "string",
+      required: true,
+      validate: v.string().refine((path) => {
+        if (!path.endsWith(".json") && !path.endsWith(".yaml")) {
+          return "Must be a JSON or YAML file";
+        }
+        return true;
+      }),
+    },
   },
   action({ args }) {
     console.log(`Uploading ${args.file}`);
@@ -213,21 +237,20 @@ const upload = defineCommand({
 const setDate = defineCommand({
   name: "set-date",
   arguments: {
-    date: argument
-      .string()
-      .required()
-      .validate(
-        v.string().refine((value) => {
-          const date = new Date(value);
-          if (isNaN(date.getTime())) {
-            return "Invalid date format";
-          }
-          if (date < new Date()) {
-            return "Date must be in the future";
-          }
-          return true;
-        })
-      ),
+    date: {
+      type: "string",
+      required: true,
+      validate: v.string().refine((value) => {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) {
+          return "Invalid date format";
+        }
+        if (date < new Date()) {
+          return "Date must be in the future";
+        }
+        return true;
+      }),
+    },
   },
   action({ args }) {
     console.log(`Date set to ${args.date}`);
@@ -253,12 +276,16 @@ For simple cases, use inline validation:
 const greet = defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().required().validate((value) => {
-      if (value.toLowerCase() === "admin") {
-        return "Name cannot be 'admin'";
-      }
-      return true;
-    }),
+    name: {
+      type: "string",
+      required: true,
+      validate: (value) => {
+        if (value.toLowerCase() === "admin") {
+          return "Name cannot be 'admin'";
+        }
+        return true;
+      },
+    },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`);

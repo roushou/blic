@@ -69,7 +69,7 @@ Test commands with positional arguments:
 const echo = defineCommand({
   name: "echo",
   arguments: {
-    message: argument.string().required(),
+    message: { type: "string", required: true },
   },
   action({ args }) {
     console.log(args.message);
@@ -92,8 +92,8 @@ Test commands with flags and options:
 const build = defineCommand({
   name: "build",
   options: {
-    minify: option.boolean().short("m"),
-    output: option.string().short("o").default("dist"),
+    minify: { type: "boolean", short: "m" },
+    output: { type: "string", short: "o", default: "dist" },
   },
   action({ options }) {
     console.log(`Building to ${options.output}`);
@@ -130,7 +130,7 @@ Inject environment variables for testing:
 const deploy = defineCommand({
   name: "deploy",
   options: {
-    token: option.string().env("API_TOKEN"),
+    token: { type: "string", env: "API_TOKEN" },
   },
   action({ options }) {
     console.log(`Token: ${options.token}`);
@@ -267,7 +267,7 @@ describe("deploy command", () => {
 ## Complete Example
 
 ```typescript
-import { defineCli, defineCommand, argument, option } from "boune";
+import { defineCli, defineCommand } from "boune";
 import { testCli } from "boune/testing";
 import { describe, test, expect, beforeAll } from "bun:test";
 
@@ -275,10 +275,10 @@ import { describe, test, expect, beforeAll } from "bun:test";
 const greet = defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().required(),
+    name: { type: "string", required: true },
   },
   options: {
-    loud: option.boolean().short("l"),
+    loud: { type: "boolean", short: "l" },
   },
   action({ args, options }) {
     const message = `Hello, ${args.name}!`;

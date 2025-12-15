@@ -1,13 +1,6 @@
 #!/usr/bin/env bun
 
-import {
-  defineCli,
-  defineCommand,
-  error,
-  info,
-  option,
-  success,
-} from "../packages/boune/src/index.ts";
+import { defineCli, defineCommand, error, info, success } from "../packages/boune/src/index.ts";
 import bouneJsrPkg from "../packages/boune/jsr.json";
 import bounePkg from "../packages/boune/package.json";
 import { confirm } from "../packages/boune/src/prompt/index.ts";
@@ -70,7 +63,9 @@ function bumpVersion(version: string, type: BumpType): string {
   if (!match) {
     throw new Error(`Invalid semver version: "${version}"`);
   }
-  const [, major, minor, patch] = match.map(Number);
+  const major = Number(match[1]);
+  const minor = Number(match[2]);
+  const patch = Number(match[3]);
   switch (type) {
     case "major":
       return `${major + 1}.0.0`;
@@ -249,23 +244,26 @@ const bumpCommand = defineCommand({
   name: "bump",
   description: "Bump versions of packages without publishing",
   options: {
-    type: option
-      .string()
-      .short("t")
-      .long("type")
-      .required()
-      .describe("Version bump type: patch, minor, major"),
-    package: option
-      .string()
-      .short("p")
-      .long("package")
-      .required()
-      .describe("Package to bump: boune, create-boune, or all"),
-    execute: option
-      .boolean()
-      .short("e")
-      .long("execute")
-      .describe("Actually bump (default is dry-run)"),
+    type: {
+      type: "string",
+      short: "t",
+      long: "type",
+      required: true,
+      description: "Version bump type: patch, minor, major",
+    },
+    package: {
+      type: "string",
+      short: "p",
+      long: "package",
+      required: true,
+      description: "Package to bump: boune, create-boune, or all",
+    },
+    execute: {
+      type: "boolean",
+      short: "e",
+      long: "execute",
+      description: "Actually bump (default is dry-run)",
+    },
   },
   async action({ options }) {
     const bumpType = options.type as BumpType;
@@ -305,25 +303,28 @@ const releaseCommand = defineCommand({
   name: "release",
   description: "Bump versions and publish packages to npm and jsr",
   options: {
-    bump: option
-      .string()
-      .short("b")
-      .long("bump")
-      .required()
-      .describe("Version bump type: patch, minor, major"),
-    package: option
-      .string()
-      .short("p")
-      .long("package")
-      .required()
-      .describe("Package to release: boune, create-boune, or all"),
-    execute: option
-      .boolean()
-      .short("e")
-      .long("execute")
-      .describe("Actually publish (default is dry-run)"),
-    skipNpm: option.boolean().long("skip-npm").describe("Skip npm publish"),
-    skipJsr: option.boolean().long("skip-jsr").describe("Skip jsr publish"),
+    bump: {
+      type: "string",
+      short: "b",
+      long: "bump",
+      required: true,
+      description: "Version bump type: patch, minor, major",
+    },
+    package: {
+      type: "string",
+      short: "p",
+      long: "package",
+      required: true,
+      description: "Package to release: boune, create-boune, or all",
+    },
+    execute: {
+      type: "boolean",
+      short: "e",
+      long: "execute",
+      description: "Actually publish (default is dry-run)",
+    },
+    skipNpm: { type: "boolean", long: "skip-npm", description: "Skip npm publish" },
+    skipJsr: { type: "boolean", long: "skip-jsr", description: "Skip jsr publish" },
   },
   async action({ options }) {
     const bumpType = options.bump as BumpType;

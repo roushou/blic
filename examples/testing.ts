@@ -8,7 +8,7 @@
  *
  * This file demonstrates how to write integration tests for CLI commands.
  */
-import { argument, defineCli, defineCommand, option } from "../packages/boune/src/index.ts";
+import { defineCli, defineCommand } from "../packages/boune/src/index.ts";
 import { describe, expect, test } from "bun:test";
 import { testCli } from "../packages/boune/src/testing/index.ts";
 
@@ -20,10 +20,10 @@ const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().default("World").describe("Name to greet"),
+    name: { type: "string", default: "World", description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
   },
   action({ args, options }) {
     const message = `Hello, ${args.name}!`;
@@ -35,8 +35,8 @@ const add = defineCommand({
   name: "add",
   description: "Add two numbers",
   arguments: {
-    a: argument.number().required().describe("First number"),
-    b: argument.number().required().describe("Second number"),
+    a: { type: "number", required: true, description: "First number" },
+    b: { type: "number", required: true, description: "Second number" },
   },
   action({ args }) {
     console.log(`Result: ${args.a + args.b}`);
@@ -47,10 +47,10 @@ const deploy = defineCommand({
   name: "deploy",
   description: "Deploy to environment",
   arguments: {
-    env: argument.string().required().describe("Target environment"),
+    env: { type: "string", required: true, description: "Target environment" },
   },
   options: {
-    dryRun: option.boolean().long("dry-run").describe("Simulate deployment"),
+    dryRun: { type: "boolean", long: "dry-run", description: "Simulate deployment" },
   },
   action({ args, options }) {
     const apiKey = process.env.API_KEY;
@@ -80,7 +80,7 @@ const slow = defineCommand({
   name: "slow",
   description: "A slow command",
   arguments: {
-    ms: argument.number().default(100).describe("Milliseconds to wait"),
+    ms: { type: "number", default: 100, description: "Milliseconds to wait" },
   },
   async action({ args }) {
     await new Promise((resolve) => setTimeout(resolve, args.ms));

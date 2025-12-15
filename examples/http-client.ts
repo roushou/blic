@@ -3,27 +3,20 @@
 /**
  * HTTP client CLI demonstrating async operations and environment variables
  */
-import {
-  argument,
-  color,
-  createSpinner,
-  defineCli,
-  defineCommand,
-  option,
-} from "../packages/boune/src/index.ts";
+import { color, createSpinner, defineCli, defineCommand } from "../packages/boune/src/index.ts";
 
 // GET request
 const get = defineCommand({
   name: "get",
   description: "Make a GET request",
   arguments: {
-    url: argument.string().required().describe("URL to fetch"),
+    url: { type: "string", required: true, description: "URL to fetch" },
   },
   options: {
-    header: option.string().short("H").describe("Add header (can be repeated)"),
-    output: option.string().short("o").describe("Write response to file"),
-    verbose: option.boolean().short("v").describe("Show response headers"),
-    json: option.boolean().describe("Parse response as JSON"),
+    header: { type: "string", short: "H", description: "Add header (can be repeated)" },
+    output: { type: "string", short: "o", description: "Write response to file" },
+    verbose: { type: "boolean", short: "v", description: "Show response headers" },
+    json: { type: "boolean", description: "Parse response as JSON" },
   },
   async action({ args, options }) {
     const spinner = createSpinner(`GET ${args.url}`).start();
@@ -71,18 +64,19 @@ const post = defineCommand({
   name: "post",
   description: "Make a POST request",
   arguments: {
-    url: argument.string().required().describe("URL to post to"),
+    url: { type: "string", required: true, description: "URL to post to" },
   },
   options: {
-    data: option.string().short("d").describe("Request body data"),
-    file: option.string().short("f").describe("Read body from file"),
-    header: option.string().short("H").describe("Add header"),
-    contentType: option
-      .string()
-      .short("t")
-      .default("application/json")
-      .describe("Content-Type header"),
-    verbose: option.boolean().short("v").describe("Show response headers"),
+    data: { type: "string", short: "d", description: "Request body data" },
+    file: { type: "string", short: "f", description: "Read body from file" },
+    header: { type: "string", short: "H", description: "Add header" },
+    contentType: {
+      type: "string",
+      short: "t",
+      default: "application/json",
+      description: "Content-Type header",
+    },
+    verbose: { type: "boolean", short: "v", description: "Show response headers" },
   },
   async action({ args, options }) {
     const spinner = createSpinner(`POST ${args.url}`).start();
@@ -140,7 +134,7 @@ const head = defineCommand({
   name: "head",
   description: "Make a HEAD request (headers only)",
   arguments: {
-    url: argument.string().required().describe("URL to check"),
+    url: { type: "string", required: true, description: "URL to check" },
   },
   async action({ args }) {
     const spinner = createSpinner(`HEAD ${args.url}`).start();
@@ -166,11 +160,11 @@ const download = defineCommand({
   description: "Download a file",
   aliases: ["dl"],
   arguments: {
-    url: argument.string().required().describe("URL to download"),
-    output: argument.string().describe("Output filename"),
+    url: { type: "string", required: true, description: "URL to download" },
+    output: { type: "string", description: "Output filename" },
   },
   options: {
-    quiet: option.boolean().short("q").describe("Suppress progress output"),
+    quiet: { type: "boolean", short: "q", description: "Suppress progress output" },
   },
   async action({ args, options }) {
     const output = args.output || args.url.split("/").pop() || "download";
@@ -221,8 +215,13 @@ defineCli({
   version: "1.0.0",
   description: "HTTP client CLI",
   globalOptions: {
-    baseUrl: option.string().env("HTTP_BASE_URL").describe("Base URL for requests"),
-    timeout: option.number().default(30000).env("HTTP_TIMEOUT").describe("Request timeout"),
+    baseUrl: { type: "string", env: "HTTP_BASE_URL", description: "Base URL for requests" },
+    timeout: {
+      type: "number",
+      default: 30000,
+      env: "HTTP_TIMEOUT",
+      description: "Request timeout",
+    },
   },
   commands: {
     get,

@@ -2,7 +2,7 @@
  * Fish completion script generator
  */
 
-import type { CliConfig, CommandConfig, OptionDef } from "../types/index.ts";
+import type { CliConfig, CommandConfig, InternalOptionDef } from "../types/index.ts";
 
 /**
  * Generate fish completion script for a CLI
@@ -79,7 +79,7 @@ export function generateFishCompletion(config: CliConfig): string {
   return lines.join("\n");
 }
 
-function formatFishOption(cliName: string, option: OptionDef, condition?: string): string {
+function formatFishOption(cliName: string, option: InternalOptionDef, condition?: string): string {
   const parts = [`complete -c ${cliName}`];
 
   if (condition) {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { argument, color, createSpinner, defineCli, defineCommand, option } from "boune";
+import { color, createSpinner, defineCli, defineCommand } from "boune";
 import { confirm, select, text } from "boune/prompt";
 import { generateProject } from "./generator.ts";
 
@@ -8,12 +8,12 @@ const newCommand = defineCommand({
   name: "new",
   description: "Create a new CLI project",
   arguments: {
-    name: argument.string().describe("Project name"),
+    name: { type: "string", description: "Project name" },
   },
   options: {
-    template: option.string().short("t").describe("Template to use (minimal, full)"),
-    noInstall: option.boolean().long("no-install").describe("Skip installing dependencies"),
-    noGit: option.boolean().long("no-git").describe("Skip git initialization"),
+    template: { type: "string", short: "t", description: "Template to use (minimal, full)" },
+    noInstall: { type: "boolean", long: "no-install", description: "Skip installing dependencies" },
+    noGit: { type: "boolean", long: "no-git", description: "Skip git initialization" },
   },
   async action({ args, options }) {
     let projectName = args.name;

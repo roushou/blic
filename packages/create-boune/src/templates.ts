@@ -52,16 +52,16 @@ export function getMinimalTemplate(name: string): TemplateFile[] {
       path: "src/index.ts",
       content: `#!/usr/bin/env bun
 
-import { argument, color, defineCli, defineCommand, option } from "boune";
+import { color, defineCli, defineCommand } from "boune";
 
 const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
   },
   action({ args, options }) {
     const msg = \`Hello, \${args.name}!\`;
@@ -180,17 +180,17 @@ defineCli({
     },
     {
       path: "src/commands/greet.ts",
-      content: `import { argument, color, defineCommand, option } from "boune";
+      content: `import { color, defineCommand } from "boune";
 
 export const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
-    times: option.number().short("t").default(1).describe("Repeat the greeting"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
+    times: { type: "number", short: "t", default: 1, description: "Repeat the greeting" },
   },
   action({ args, options }) {
     for (let i = 0; i < options.times; i++) {

@@ -2,9 +2,29 @@
  * CLI definition API
  */
 
-import type { CliConfig, CliSchema, CommandConfig } from "../types/index.ts";
+import type { CliConfig, CliSchema, CommandConfig, InternalOptionDef } from "../types/index.ts";
 import { defineCommand, isCommandConfig } from "./command.ts";
 import { Cli } from "../runtime/cli.ts";
+import type { OptionDefinition } from "../types/option.ts";
+
+/**
+ * Normalize option definitions to internal format
+ */
+function normalizeGlobalOptions(opts?: Record<string, OptionDefinition>): InternalOptionDef[] {
+  if (!opts) return [];
+  return Object.entries(opts).map(([name, def]) => ({
+    name,
+    short: def.short,
+    long: def.long ?? name,
+    description: def.description ?? "",
+    type: def.type,
+    required: def.required ?? false,
+    // Boolean options default to false
+    default: def.default ?? (def.type === "boolean" ? false : undefined),
+    env: def.env,
+    validate: def.validate,
+  }));
+}
 
 /**
  * Define a CLI from a declarative schema
@@ -20,7 +40,7 @@ import { Cli } from "../runtime/cli.ts";
  *       name: "build",
  *       description: "Build the project",
  *       options: {
- *         watch: option.boolean().short("w"),
+ *         watch: { type: "boolean", short: "w" },
  *       },
  *       action({ options }) {
  *         console.log("Building...", options.watch ? "(watching)" : "");
@@ -28,7 +48,7 @@ import { Cli } from "../runtime/cli.ts";
  *     },
  *   },
  *   globalOptions: {
- *     verbose: option.boolean().short("v").describe("Verbose output"),
+ *     verbose: { type: "boolean", short: "v", description: "Verbose output" },
  *   },
  *   middleware: [loggingMiddleware],
  * });
@@ -69,11 +89,8 @@ export function defineCli(schema: CliSchema): Cli {
     });
   }
 
-  if (schema.globalOptions) {
-    for (const [name, builder] of Object.entries(schema.globalOptions)) {
-      config.globalOptions.push(builder._build(name));
-    }
-  }
+  // Add user-defined global options
+  config.globalOptions.push(...normalizeGlobalOptions(schema.globalOptions));
 
   for (const [name, cmdSchemaOrConfig] of Object.entries(schema.commands)) {
     let cmdConfig: CommandConfig;

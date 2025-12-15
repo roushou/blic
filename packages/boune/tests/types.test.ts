@@ -3,9 +3,7 @@
  * These tests verify that TypeScript correctly infers types through the command definition API
  */
 import { describe, expect, test } from "bun:test";
-import { argument } from "../src/schema/argument.ts";
 import { defineCommand } from "../src/define/index.ts";
-import { option } from "../src/schema/option.ts";
 
 describe("type inference", () => {
   test("infers argument types in action handler", () => {
@@ -14,8 +12,8 @@ describe("type inference", () => {
     const cmd = defineCommand({
       name: "test",
       arguments: {
-        name: argument.string().required(),
-        count: argument.number().default(1),
+        name: { type: "string", required: true },
+        count: { type: "number", default: 1 },
       },
       action({ args }) {
         // TypeScript should infer:
@@ -34,9 +32,9 @@ describe("type inference", () => {
     const cmd = defineCommand({
       name: "test",
       options: {
-        output: option.string().required(),
-        port: option.number().default(3000),
-        verbose: option.boolean(),
+        output: { type: "string", required: true },
+        port: { type: "number", default: 3000 },
+        verbose: { type: "boolean" },
       },
       action({ options }) {
         // TypeScript should infer:
@@ -58,7 +56,7 @@ describe("type inference", () => {
     defineCommand({
       name: "test",
       arguments: {
-        file: argument.string(), // optional, no default
+        file: { type: "string" }, // optional, no default
       },
       action({ args }) {
         // TypeScript should infer: args.file: string | undefined
@@ -76,11 +74,11 @@ describe("type inference", () => {
     defineCommand({
       name: "test",
       arguments: {
-        files: argument.string().variadic().required(),
+        files: { type: "string", variadic: true, required: true },
       },
       action({ args }) {
         // TypeScript should infer: args.files: string[]
-        const mapped: string[] = args.files.map((f) => f.toUpperCase());
+        const mapped: string[] = args.files.map((f: string) => f.toUpperCase());
         expect(Array.isArray(mapped)).toBe(true);
       },
     });
@@ -90,12 +88,12 @@ describe("type inference", () => {
     defineCommand({
       name: "test",
       arguments: {
-        source: argument.string().required(),
-        dest: argument.string().required(),
+        source: { type: "string", required: true },
+        dest: { type: "string", required: true },
       },
       options: {
-        force: option.boolean().short("f"),
-        mode: option.string().default("copy"),
+        force: { type: "boolean", short: "f" },
+        mode: { type: "string", default: "copy" },
       },
       action({ args, options }) {
         // All types should be properly inferred

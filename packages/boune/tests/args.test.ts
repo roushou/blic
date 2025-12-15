@@ -1,6 +1,6 @@
 import { coerceValue, parseArguments } from "../src/parser/args.ts";
 import { describe, expect, test } from "bun:test";
-import type { ArgumentDef } from "../src/types/index.ts";
+import type { InternalArgumentDef } from "../src/types/index.ts";
 
 describe("coerceValue", () => {
   test("coerces strings", () => {
@@ -35,7 +35,7 @@ describe("coerceValue", () => {
 
 describe("parseArguments", () => {
   test("parses required arguments", () => {
-    const defs: ArgumentDef[] = [
+    const defs: InternalArgumentDef[] = [
       { name: "name", description: "Name", required: true, type: "string" },
     ];
     const { args, errors } = parseArguments(["test"], defs);
@@ -44,7 +44,7 @@ describe("parseArguments", () => {
   });
 
   test("reports missing required arguments", () => {
-    const defs: ArgumentDef[] = [
+    const defs: InternalArgumentDef[] = [
       { name: "name", description: "Name", required: true, type: "string" },
     ];
     const { errors } = parseArguments([], defs);
@@ -53,7 +53,7 @@ describe("parseArguments", () => {
   });
 
   test("applies default values", () => {
-    const defs: ArgumentDef[] = [
+    const defs: InternalArgumentDef[] = [
       { name: "name", description: "Name", required: false, type: "string", default: "default" },
     ];
     const { args, errors } = parseArguments([], defs);
@@ -62,7 +62,7 @@ describe("parseArguments", () => {
   });
 
   test("parses multiple arguments", () => {
-    const defs: ArgumentDef[] = [
+    const defs: InternalArgumentDef[] = [
       { name: "src", description: "Source", required: true, type: "string" },
       { name: "dest", description: "Destination", required: true, type: "string" },
     ];
@@ -72,7 +72,7 @@ describe("parseArguments", () => {
   });
 
   test("parses variadic arguments", () => {
-    const defs: ArgumentDef[] = [
+    const defs: InternalArgumentDef[] = [
       { name: "files", description: "Files", required: true, type: "string", variadic: true },
     ];
     const { args, errors } = parseArguments(["a.txt", "b.txt", "c.txt"], defs);
@@ -81,7 +81,7 @@ describe("parseArguments", () => {
   });
 
   test("coerces argument types", () => {
-    const defs: ArgumentDef[] = [
+    const defs: InternalArgumentDef[] = [
       { name: "count", description: "Count", required: true, type: "number" },
     ];
     const { args, errors } = parseArguments(["42"], defs);

@@ -29,18 +29,19 @@ console.log(script);
 Add a built-in completion command to your CLI:
 
 ```typescript
-import { defineCli, defineCommand, option } from "boune";
+import { defineCli, defineCommand } from "boune";
 import { generateCompletion } from "boune/completions";
 
 const completions = defineCommand({
   name: "completions",
   description: "Generate shell completions",
   options: {
-    shell: option
-      .string()
-      .short("s")
-      .required()
-      .describe("Shell type (bash, zsh, fish)"),
+    shell: {
+      type: "string",
+      short: "s",
+      required: true,
+      description: "Shell type (bash, zsh, fish)",
+    },
   },
   action({ options }) {
     const shell = options.shell as "bash" | "zsh" | "fish";
@@ -119,17 +120,17 @@ const build = defineCommand({
   name: "build",
   aliases: ["b"],
   options: {
-    output: option.string().short("o").describe("Output directory"),
-    minify: option.boolean().short("m").describe("Minify output"),
-    watch: option.boolean().short("w").describe("Watch mode"),
+    output: { type: "string", short: "o", description: "Output directory" },
+    minify: { type: "boolean", short: "m", description: "Minify output" },
+    watch: { type: "boolean", short: "w", description: "Watch mode" },
   },
 });
 
 const serve = defineCommand({
   name: "serve",
   options: {
-    port: option.number().short("p").describe("Port number"),
-    host: option.string().short("h").describe("Host address"),
+    port: { type: "number", short: "p", description: "Port number" },
+    host: { type: "string", short: "h", description: "Host address" },
   },
 });
 ```

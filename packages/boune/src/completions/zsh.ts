@@ -2,7 +2,7 @@
  * Zsh completion script generator
  */
 
-import type { CliConfig, CommandConfig, OptionDef } from "../types/index.ts";
+import type { CliConfig, CommandConfig, InternalOptionDef } from "../types/index.ts";
 
 /**
  * Generate zsh completion script for a CLI
@@ -80,7 +80,7 @@ export function generateZshCompletion(config: CliConfig): string {
   return lines.join("\n");
 }
 
-function formatZshOption(option: OptionDef): string {
+function formatZshOption(option: InternalOptionDef): string {
   const desc = (option.description || "")
     .replace(/'/g, "'\\''")
     .replace(/\[/g, "\\[")

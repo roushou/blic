@@ -1,4 +1,4 @@
-import type { ArgumentDef, Kind, ParsedArgs, ValidationError } from "../types/index.ts";
+import type { InternalArgumentDef, Kind, ParsedArgs, ValidationError } from "../types/index.ts";
 
 /**
  * Result type for coercion operations
@@ -68,7 +68,7 @@ type ArgParseResult = {
  * Parse a single variadic argument definition
  */
 const parseVariadicArg = (
-  def: ArgumentDef,
+  def: InternalArgumentDef,
   values: string[],
   startIndex: number,
 ): ArgParseResult => {
@@ -111,7 +111,7 @@ const parseVariadicArg = (
 /**
  * Parse a single non-variadic argument definition
  */
-const parseSingleArg = (def: ArgumentDef, value: string | undefined): ArgParseResult => {
+const parseSingleArg = (def: InternalArgumentDef, value: string | undefined): ArgParseResult => {
   if (value === undefined) {
     return {
       name: def.name,
@@ -145,7 +145,7 @@ const parseSingleArg = (def: ArgumentDef, value: string | undefined): ArgParseRe
 /**
  * Run custom validation on parsed arguments
  */
-const runValidators = (args: ParsedArgs, definitions: ArgumentDef[]): ValidationError[] => {
+const runValidators = (args: ParsedArgs, definitions: InternalArgumentDef[]): ValidationError[] => {
   const errors: ValidationError[] = [];
 
   for (const def of definitions) {
@@ -178,7 +178,7 @@ type ArgParseState = {
  */
 const argReducer =
   (values: string[]) =>
-  (state: ArgParseState, def: ArgumentDef): ArgParseState => {
+  (state: ArgParseState, def: InternalArgumentDef): ArgParseState => {
     const result = def.variadic
       ? parseVariadicArg(def, values, state.valueIndex)
       : parseSingleArg(def, values[state.valueIndex]);
@@ -195,7 +195,7 @@ const argReducer =
  */
 export function parseArguments(
   values: string[],
-  definitions: ArgumentDef[],
+  definitions: InternalArgumentDef[],
 ): { args: ParsedArgs; errors: ValidationError[] } {
   const initial: ArgParseState = { args: {}, errors: [], valueIndex: 0 };
   const parsed = definitions.reduce(argReducer(values), initial);

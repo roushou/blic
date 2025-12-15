@@ -1,10 +1,6 @@
 // Declarative API
 export { defineCommand, defineCli } from "./define/index.ts";
 
-// Schema builders
-export { argument, ArgBuilder } from "./schema/argument.ts";
-export { option, OptBuilder } from "./schema/option.ts";
-
 // Runtime
 export { Cli } from "./runtime/index.ts";
 
@@ -12,19 +8,15 @@ export { Cli } from "./runtime/index.ts";
 export type {
   ActionContext,
   ActionHandler,
-  ArgumentDef,
   CliConfig,
   CliSchema,
   CommandConfig,
   CommandSchema,
   ErrorHandler,
-  InferArgs,
   InferKind,
-  InferOpts,
   Kind,
   MiddlewareContext,
   MiddlewareHandler,
-  OptionDef,
   ParsedArgs,
   ParsedOptions,
   ParseResult,
@@ -33,6 +25,14 @@ export type {
   TokenType,
   ValidationError,
   ValidationErrorType,
+  // Argument types
+  ArgumentDefinition,
+  InferArgType,
+  InferArgs,
+  // Option types
+  OptionDefinition,
+  InferOptType,
+  InferOpts,
   // Prompt types
   PromptDefinition,
   TextPromptDef,

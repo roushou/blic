@@ -3,14 +3,7 @@
 /**
  * Task manager CLI demonstrating SQLite persistence with bun:sqlite
  */
-import {
-  argument,
-  color,
-  defineCli,
-  defineCommand,
-  option,
-  table,
-} from "../packages/boune/src/index.ts";
+import { color, defineCli, defineCommand, table } from "../packages/boune/src/index.ts";
 
 import { Database } from "bun:sqlite";
 
@@ -51,9 +44,9 @@ const list = defineCommand({
   description: "List all tasks",
   aliases: ["ls"],
   options: {
-    status: option.string().short("s").describe("Filter by status"),
-    priority: option.string().short("p").describe("Filter by priority"),
-    all: option.boolean().describe("Show all tasks including done"),
+    status: { type: "string", short: "s", description: "Filter by status" },
+    priority: { type: "string", short: "p", description: "Filter by priority" },
+    all: { type: "boolean", description: "Show all tasks including done" },
   },
   action({ options }) {
     let query = "SELECT * FROM tasks";
@@ -101,16 +94,16 @@ const add = defineCommand({
   name: "add",
   description: "Add a new task",
   arguments: {
-    title: argument.string().describe("Task title"),
+    title: { type: "string", description: "Task title" },
   },
   options: {
-    priority: option
-      .string()
-      .short("p")
-      .default("medium")
-      .describe("Priority level (low, medium, high)"),
+    priority: {
+      type: "string",
+      short: "p",
+      default: "medium",
+      description: "Priority level (low, medium, high)",
+    },
   },
-  // Declarative prompts - called conditionally in action
   prompts: {
     title: { kind: "text", message: "Task title:" },
     priority: {
@@ -142,7 +135,7 @@ const done = defineCommand({
   name: "done",
   description: "Mark task as done",
   arguments: {
-    id: argument.number().required().describe("Task ID"),
+    id: { type: "number", required: true, description: "Task ID" },
   },
   action({ args }) {
     const result = db.run("UPDATE tasks SET status = 'done' WHERE id = ?", [args.id]);
@@ -160,7 +153,7 @@ const start = defineCommand({
   name: "start",
   description: "Mark task as in-progress",
   arguments: {
-    id: argument.number().required().describe("Task ID"),
+    id: { type: "number", required: true, description: "Task ID" },
   },
   action({ args }) {
     const result = db.run("UPDATE tasks SET status = 'in-progress' WHERE id = ?", [args.id]);
@@ -179,10 +172,10 @@ const remove = defineCommand({
   description: "Remove a task",
   aliases: ["rm"],
   arguments: {
-    id: argument.number().required().describe("Task ID"),
+    id: { type: "number", required: true, description: "Task ID" },
   },
   options: {
-    force: option.boolean().short("f").describe("Skip confirmation"),
+    force: { type: "boolean", short: "f", description: "Skip confirmation" },
   },
   prompts: {
     confirm: { kind: "confirm", message: "Delete this task?", default: false },
@@ -213,7 +206,7 @@ const clear = defineCommand({
   name: "clear",
   description: "Remove all completed tasks",
   options: {
-    force: option.boolean().short("f").describe("Skip confirmation"),
+    force: { type: "boolean", short: "f", description: "Skip confirmation" },
   },
   prompts: {
     confirm: { kind: "confirm", message: "Remove completed tasks?", default: false },

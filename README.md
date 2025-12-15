@@ -24,16 +24,16 @@ bun add boune
 ## Quick Start
 
 ```ts
-import { argument, defineCli, defineCommand, option } from "boune";
+import { defineCli, defineCommand } from "boune";
 
 const greet = defineCommand({
   name: "greet",
   description: "Greet someone",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   options: {
-    loud: option.boolean().short("l").describe("Shout the greeting"),
+    loud: { type: "boolean", short: "l", description: "Shout the greeting" },
   },
   action({ args, options }) {
     const msg = `Hello, ${args.name}!`;
@@ -66,14 +66,14 @@ Options:
 
 ## Arguments
 
-Arguments are positional values passed to commands. Use the `argument` builder to define them.
+Arguments are positional values passed to commands. Define them as plain objects with type inference.
 
 ```ts
 // Required argument
 defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().required().describe("Name to greet"),
+    name: { type: "string", required: true, description: "Name to greet" },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`);
@@ -84,7 +84,7 @@ defineCommand({
 defineCommand({
   name: "greet",
   arguments: {
-    name: argument.string().default("World").describe("Name to greet"),
+    name: { type: "string", default: "World", description: "Name to greet" },
   },
   action({ args }) {
     console.log(`Hello, ${args.name}!`);
@@ -95,7 +95,7 @@ defineCommand({
 defineCommand({
   name: "cat",
   arguments: {
-    files: argument.string().required().variadic().describe("Files to concatenate"),
+    files: { type: "string", required: true, variadic: true, description: "Files to concatenate" },
   },
   action({ args }) {
     // args.files is string[]
@@ -106,7 +106,7 @@ defineCommand({
 defineCommand({
   name: "repeat",
   arguments: {
-    count: argument.number().required().describe("Times to repeat"),
+    count: { type: "number", required: true, description: "Times to repeat" },
   },
   action({ args }) {
     // args.count is number

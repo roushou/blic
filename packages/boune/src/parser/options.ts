@@ -1,16 +1,16 @@
-import type { OptionDef, ParsedOptions, Token, ValidationError } from "../types/index.ts";
+import type { InternalOptionDef, ParsedOptions, Token, ValidationError } from "../types/index.ts";
 import { coerceValue } from "./args.ts";
 
 /**
  * Build a lookup map for options by long flag, short flag, and name
  */
-const buildOptionMap = (definitions: OptionDef[]): Map<string, OptionDef> =>
+const buildOptionMap = (definitions: InternalOptionDef[]): Map<string, InternalOptionDef> =>
   definitions.reduce((map, def) => {
     if (def.long) map.set(def.long, def);
     map.set(def.name, def);
     if (def.short) map.set(def.short, def);
     return map;
-  }, new Map<string, OptionDef>());
+  }, new Map<string, InternalOptionDef>());
 
 /**
  * Option parsing state
@@ -20,7 +20,7 @@ type OptionParseState = {
   errors: ValidationError[];
   remaining: Token[];
   seenOptions: Set<string>;
-  expecting: OptionDef | null;
+  expecting: InternalOptionDef | null;
   afterSeparator: boolean;
   skipNext: boolean;
 };
@@ -60,7 +60,7 @@ const handleNonOption = (state: OptionParseState, token: Token): OptionParseStat
 const handleExpectedValue = (
   state: OptionParseState,
   token: Token,
-  def: OptionDef,
+  def: InternalOptionDef,
 ): OptionParseState => {
   const result = coerceValue(token.value, def.type);
   return result.ok
@@ -116,7 +116,7 @@ const handleUnknownOption = (
  */
 const handleBooleanOption = (
   state: OptionParseState,
-  def: OptionDef,
+  def: InternalOptionDef,
   nextToken: Token | undefined,
 ): OptionParseState => {
   // Check if next token is an explicit boolean value
@@ -144,7 +144,7 @@ const handleBooleanOption = (
  */
 const handleValueOption = (
   state: OptionParseState,
-  def: OptionDef,
+  def: InternalOptionDef,
   nextToken: Token | undefined,
 ): OptionParseState => {
   if (nextToken?.type === "value") {
@@ -200,7 +200,7 @@ const handleOption = (
   state: OptionParseState,
   token: Token,
   nextToken: Token | undefined,
-  optionMap: Map<string, OptionDef>,
+  optionMap: Map<string, InternalOptionDef>,
   allowUnknown: boolean,
 ): OptionParseState => {
   const def = optionMap.get(token.value);
@@ -218,7 +218,7 @@ const handleOption = (
  * Create reducer for option parsing
  */
 const createOptionReducer =
-  (optionMap: Map<string, OptionDef>, allowUnknown: boolean, tokens: Token[]) =>
+  (optionMap: Map<string, InternalOptionDef>, allowUnknown: boolean, tokens: Token[]) =>
   (state: OptionParseState, token: Token, index: number): OptionParseState => {
     // Skip this token if previous iteration consumed it
     if (state.skipNext) {
@@ -258,7 +258,7 @@ type DefaultResult = {
   error?: ValidationError;
 };
 
-const resolveDefault = (def: OptionDef): DefaultResult => {
+const resolveDefault = (def: InternalOptionDef): DefaultResult => {
   // Check environment variable first
   if (def.env) {
     const envValue = process.env[def.env];
@@ -296,7 +296,7 @@ const resolveDefault = (def: OptionDef): DefaultResult => {
 const applyDefaults = (
   options: ParsedOptions,
   errors: ValidationError[],
-  definitions: OptionDef[],
+  definitions: InternalOptionDef[],
   seenOptions: Set<string>,
 ): { options: ParsedOptions; errors: ValidationError[] } => {
   const unseenDefs = definitions.filter((def) => !seenOptions.has(def.name));
@@ -319,7 +319,10 @@ const applyDefaults = (
 /**
  * Run custom validators on options
  */
-const runValidators = (options: ParsedOptions, definitions: OptionDef[]): ValidationError[] => {
+const runValidators = (
+  options: ParsedOptions,
+  definitions: InternalOptionDef[],
+): ValidationError[] => {
   const errors: ValidationError[] = [];
 
   for (const def of definitions) {
@@ -343,7 +346,7 @@ const runValidators = (options: ParsedOptions, definitions: OptionDef[]): Valida
  */
 export function parseOptions(
   tokens: Token[],
-  definitions: OptionDef[],
+  definitions: InternalOptionDef[],
   allowUnknown = false,
 ): {
   options: ParsedOptions;
