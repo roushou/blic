@@ -17,7 +17,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./prompt": "./src/prompt/index.ts",
-    "./testing": "./src/testing/index.ts"
+    "./testing": "./src/testing/index.ts",
+    "./package.json": "./package.json"
   },
   "files": [
     "src"

@@ -1,3 +1,8 @@
+import { version as bouneVersion } from "boune/package.json";
+
+// Use major.minor for semver range (e.g. "0.7.0" -> "^0.7.0")
+const BOUNE_VERSION = `^${bouneVersion}`;
+
 export interface TemplateFile {
   path: string;
   content: string;
@@ -17,7 +22,7 @@ export function getMinimalTemplate(name: string): TemplateFile[] {
             build: "bun build src/index.ts --compile --outfile dist/" + name,
           },
           dependencies: {
-            boune: "^0.5.0",
+            boune: BOUNE_VERSION,
           },
           devDependencies: {
             "@types/bun": "latest",
@@ -125,7 +130,7 @@ export function getFullTemplate(name: string): TemplateFile[] {
             test: "bun test",
           },
           dependencies: {
-            boune: "^0.1.0",
+            boune: BOUNE_VERSION,
           },
           devDependencies: {
             "@types/bun": "latest",
@@ -204,31 +209,36 @@ export const greet = defineCommand({
     {
       path: "src/commands/init.ts",
       content: `import { color, createSpinner, defineCommand } from "boune";
-import { text, confirm, select } from "boune/prompt";
 
 export const init = defineCommand({
   name: "init",
   description: "Initialize a new project",
-  async action() {
-    console.log(color.bold("\\nProject Setup\\n"));
-
-    const name = await text({
+  prompts: {
+    name: {
+      kind: "text",
       message: "Project name:",
       default: "my-project",
-    });
-
-    const template = await select({
+    },
+    template: {
+      kind: "select",
       message: "Select a template:",
       options: [
         { label: "Basic", value: "basic" },
         { label: "Advanced", value: "advanced" },
-      ],
-    });
-
-    const proceed = await confirm({
+      ] as const,
+    },
+    proceed: {
+      kind: "confirm",
       message: "Create project?",
       default: true,
-    });
+    },
+  },
+  async action({ prompts }) {
+    console.log(color.bold("\\nProject Setup\\n"));
+
+    const name = await prompts.name.run();
+    const template = await prompts.template.run();
+    const proceed = await prompts.proceed.run();
 
     if (!proceed) {
       console.log(color.dim("Cancelled."));
@@ -240,7 +250,7 @@ export const init = defineCommand({
     // Simulate work
     await new Promise((r) => setTimeout(r, 1000));
 
-    spinner.succeed("Project created!");
+    spinner.succeed(\`Project "\${name}" created with \${template} template!\`);
 
     console.log(\`\\n  \${color.green("→")} cd \${name}\`);
     console.log(\`  \${color.green("→")} bun install\\n\`);

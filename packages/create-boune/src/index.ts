@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
-import { color, createSpinner, defineCli, defineCommand } from "boune";
-import { confirm, select, text } from "boune/prompt";
+import { color, createSpinner, defineCli, defineCommand, v } from "boune";
 import { generateProject } from "./generator.ts";
 
 const newCommand = defineCommand({
@@ -15,52 +14,45 @@ const newCommand = defineCommand({
     noInstall: { type: "boolean", long: "no-install", description: "Skip installing dependencies" },
     noGit: { type: "boolean", long: "no-git", description: "Skip git initialization" },
   },
-  async action({ args, options }) {
-    let projectName = args.name;
-    let template = options.template;
-    const skipInstall = options.noInstall ?? false;
-    const skipGit = options.noGit ?? false;
-
+  prompts: {
+    name: {
+      kind: "text",
+      message: "Project name:",
+      default: "my-cli",
+      validator: v.string().minLength(1),
+    },
+    template: {
+      kind: "select",
+      message: "Select a template:",
+      options: [
+        { label: "Minimal", value: "minimal", hint: "Basic CLI with one command" },
+        { label: "Full", value: "full", hint: "Multiple commands, prompts, and hooks" },
+      ] as const,
+      default: "minimal",
+    },
+    proceed: {
+      kind: "confirm",
+      message: "Create project?",
+      default: true,
+    },
+  },
+  async action({ args, options, prompts }) {
     console.log();
     console.log(color.bold("  Create a new CLI with boune"));
     console.log();
 
-    // Project name
-    if (!projectName) {
-      projectName = await text({
-        message: "Project name:",
-        default: "my-cli",
-        validate: (v) => {
-          if (!v) return "Project name is required";
-          if (!/^[a-z0-9-]+$/.test(v)) return "Use lowercase letters, numbers, and hyphens only";
-          return true;
-        },
-      });
-    }
+    // Use args/options if provided, otherwise prompt
+    const projectName = args.name || (await prompts.name.run());
+    const template = (options.template as "minimal" | "full") || (await prompts.template.run());
 
-    // Template
-    if (!template) {
-      template = await select({
-        message: "Select a template:",
-        options: [
-          { label: "Minimal", value: "minimal", hint: "Basic CLI with one command" },
-          { label: "Full", value: "full", hint: "Multiple commands, prompts, and hooks" },
-        ],
-        default: "minimal",
-      });
-    }
-
-    // Confirmation
+    // Show summary
     console.log();
     console.log(color.dim("  Project: ") + color.cyan(projectName));
     console.log(color.dim("  Template: ") + color.cyan(template));
     console.log();
 
-    const proceed = await confirm({
-      message: "Create project?",
-      default: true,
-    });
-
+    // Confirm
+    const proceed = await prompts.proceed.run();
     if (!proceed) {
       console.log(color.dim("\n  Cancelled.\n"));
       return;
@@ -73,9 +65,9 @@ const newCommand = defineCommand({
     try {
       await generateProject({
         name: projectName,
-        template: template as "minimal" | "full",
-        skipInstall,
-        skipGit,
+        template,
+        skipInstall: options.noInstall ?? false,
+        skipGit: options.noGit ?? false,
       });
 
       spinner.succeed("Project created!");
@@ -85,7 +77,7 @@ const newCommand = defineCommand({
       console.log(color.bold("  Next steps:"));
       console.log();
       console.log(`  ${color.cyan("cd")} ${projectName}`);
-      if (skipInstall) {
+      if (options.noInstall) {
         console.log(`  ${color.cyan("bun install")}`);
       }
       console.log(`  ${color.cyan("bun run dev")}`);
@@ -104,11 +96,9 @@ const cli = defineCli({
   commands: { new: newCommand },
 });
 
-// Pre-process args to support `bun create boune [name]` without explicit "new" command
+// Support `bun create boune [name]` without explicit "new" command
 const argv = process.argv.slice(2);
 const firstArg = argv[0];
-
-// If no args or first arg is not "new" and not a global flag, inject "new"
 const isGlobalFlag =
   firstArg === "--help" || firstArg === "-h" || firstArg === "--version" || firstArg === "-V";
 const isNewCommand = firstArg === "new";
