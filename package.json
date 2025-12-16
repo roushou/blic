@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
+    "dev": "bun run apps/dev/src/app.ts",
     "clean": "bun run ./scripts/clean.ts",
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",

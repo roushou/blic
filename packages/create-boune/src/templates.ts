@@ -1,6 +1,9 @@
-import { version as bouneVersion } from "boune/package.json";
+import { createRequire } from "node:module";
 
-// Use major.minor for semver range (e.g. "0.7.0" -> "^0.7.0")
+const require = createRequire(import.meta.url);
+const { version: bouneVersion } = require("boune/package.json");
+
+// Use caret range (e.g. "0.7.0" -> "^0.7.0")
 const BOUNE_VERSION = `^${bouneVersion}`;
 
 export interface TemplateFile {

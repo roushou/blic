@@ -5,6 +5,12 @@ description: Create interactive CLI experiences with built-in prompts.
 
 Boune includes a complete set of interactive prompts for gathering user input. Prompts can be defined declaratively in your commands or used standalone.
 
+> **Tip:** If you've cloned the repo, test prompts interactively:
+> ```bash
+> bun run dev prompt          # Interactive menu
+> bun run dev prompt select   # Test a specific prompt
+> ```
+
 ## Declarative Prompts
 
 Define prompts directly in your command and run them lazily:

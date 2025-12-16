@@ -319,6 +319,25 @@ Run an example:
 bun examples/demo.ts --help
 ```
 
+## Development
+
+This monorepo includes a CLI for common development tasks:
+
+```bash
+bun run dev <command>
+```
+
+| Command              | Description           |
+| -------------------- | --------------------- |
+| `test [packages...]` | Run tests             |
+| `lint`               | Run linter            |
+| `format`             | Format code           |
+| `typecheck`          | Type check            |
+| `prompt [type]`      | Test prompt types     |
+| `info`               | Show monorepo info    |
+| `ci`                 | Run full CI pipeline  |
+| `clean`              | Clean build artifacts |
+
 ## License
 
 This project is licensed under the [MIT License](./LICENSE)
