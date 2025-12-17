@@ -118,27 +118,6 @@ describe("String validation", () => {
     });
   });
 
-  describe("oneOf", () => {
-    test("accepts value in list", () => {
-      const validate = compileValidation({ oneOf: ["dev", "staging", "prod"] }, "string");
-      expect(validate("dev")).toBe(true);
-      expect(validate("prod")).toBe(true);
-    });
-
-    test("rejects value not in list", () => {
-      const validate = compileValidation({ oneOf: ["dev", "staging", "prod"] }, "string");
-      expect(validate("test")).toBe("Must be one of: dev, staging, prod");
-    });
-
-    test("uses custom error message", () => {
-      const validate = compileValidation(
-        { oneOf: { value: ["a", "b"], message: "Invalid choice" } },
-        "string",
-      );
-      expect(validate("c")).toBe("Invalid choice");
-    });
-  });
-
   describe("refine", () => {
     test("accepts value passing custom rule", () => {
       const validate = compileValidation(
@@ -167,7 +146,7 @@ describe("String validation", () => {
     });
 
     test("stops at first error", () => {
-      // Rules are checked in a fixed order: email, url, regex, minLength, maxLength, oneOf, refine
+      // Rules are checked in a fixed order: email, url, regex, minLength, maxLength, refine
       const validate = compileValidation({ minLength: 5, email: true }, "string");
       // "ab" fails email first (checked before minLength)
       expect(validate("ab")).toBe("Must be a valid email address");
@@ -282,19 +261,6 @@ describe("Number validation", () => {
         "number",
       );
       expect(validate(0)).toBe("Must be less than 0");
-    });
-  });
-
-  describe("oneOf", () => {
-    test("accepts value in list", () => {
-      const validate = compileValidation({ oneOf: [1, 2, 3] }, "number");
-      expect(validate(1)).toBe(true);
-      expect(validate(3)).toBe(true);
-    });
-
-    test("rejects value not in list", () => {
-      const validate = compileValidation({ oneOf: [1, 2, 3] }, "number");
-      expect(validate(4)).toBe("Must be one of: 1, 2, 3");
     });
   });
 

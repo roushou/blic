@@ -24,8 +24,4 @@ export const numberRules = {
     check: (value: number) => value < 0,
     message: () => "Must be negative",
   },
-  oneOf: {
-    check: <V extends number>(value: number, values: readonly V[]) => values.includes(value as V),
-    message: <V extends number>(values: readonly V[]) => `Must be one of: ${values.join(", ")}`,
-  },
 } as const satisfies Record<string, RuleSpec<number, never[]>>;

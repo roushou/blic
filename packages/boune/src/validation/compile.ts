@@ -78,16 +78,6 @@ function compileStringRules(rules: StringValidationRules): CompiledValidator {
     });
   }
 
-  if (rules.oneOf !== undefined) {
-    const { value: values, message } = extractRuleValue(rules.oneOf);
-    checks.push((value) => {
-      if (!stringRules.oneOf.check(value as string, values)) {
-        return message ?? stringRules.oneOf.message(values);
-      }
-      return true;
-    });
-  }
-
   if (rules.refine !== undefined) {
     const refine = rules.refine;
     checks.push((value) => refine(value as string));
@@ -155,16 +145,6 @@ function compileNumberRules(rules: NumberValidationRules): CompiledValidator {
     checks.push((value) => {
       if (!numberRules.max.check(value as number, max)) {
         return message ?? numberRules.max.message(max);
-      }
-      return true;
-    });
-  }
-
-  if (rules.oneOf !== undefined) {
-    const { value: values, message } = extractRuleValue(rules.oneOf);
-    checks.push((value) => {
-      if (!numberRules.oneOf.check(value as number, values)) {
-        return message ?? numberRules.oneOf.message(values);
       }
       return true;
     });

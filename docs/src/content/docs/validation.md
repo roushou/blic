@@ -18,7 +18,7 @@ const deploy = defineCommand({
     env: {
       type: "string",
       required: true,
-      validate: { oneOf: ["dev", "staging", "prod"] },
+      choices: ["dev", "staging", "prod"] as const,
     },
   },
   options: {
@@ -28,6 +28,7 @@ const deploy = defineCommand({
     },
   },
   action({ args, options }) {
+    // args.env is typed as "dev" | "staging" | "prod"
     console.log(`Deploying to ${args.env} on port ${options.port}`);
   },
 });
@@ -49,12 +50,10 @@ validate: { regex: /^[a-z]+$/ }
 validate: { minLength: 3 }
 validate: { maxLength: 50 }
 validate: { minLength: 3, maxLength: 50 }
-
-// Allowed values (runtime validation only)
-validate: { oneOf: ["small", "medium", "large"] }
-
-// For compile-time type narrowing, use `choices` instead (see Arguments & Options)
 ```
+
+> **Tip:** To restrict values to a specific set, use `choices` instead of validation.
+> See [Arguments & Options](/docs/arguments-options#choices) for type-safe enum-like values.
 
 ### Email
 
@@ -131,12 +130,10 @@ validate: { integer: true }
 // Sign constraints
 validate: { positive: true }
 validate: { negative: true }
-
-// Allowed values (runtime validation only)
-validate: { oneOf: [80, 443, 8080] }
-
-// For compile-time type narrowing, use `choices` instead (see Arguments & Options)
 ```
+
+> **Tip:** To restrict values to a specific set, use `choices` instead of validation.
+> See [Arguments & Options](/docs/arguments-options#choices) for type-safe enum-like values.
 
 ### Port Number
 
@@ -301,27 +298,25 @@ const serve = defineCommand({
 
 ### String Rules
 
-| Rule        | Type                                | Description                          |
-| ----------- | ----------------------------------- | ------------------------------------ |
-| `email`     | `true` or `{value, message}`        | Valid email format                   |
-| `url`       | `true` or `{value, message}`        | Valid URL format                     |
-| `regex`     | `RegExp` or `{value, message}`      | Match regex pattern                  |
-| `minLength` | `number` or `{value, message}`      | Minimum length                       |
-| `maxLength` | `number` or `{value, message}`      | Maximum length                       |
-| `oneOf`     | `string[]` or `{value, message}`    | One of allowed values (runtime only) |
-| `refine`    | `(value: string) => true \| string` | Custom validation                    |
+| Rule        | Type                                | Description         |
+| ----------- | ----------------------------------- | ------------------- |
+| `email`     | `true` or `{value, message}`        | Valid email format  |
+| `url`       | `true` or `{value, message}`        | Valid URL format    |
+| `regex`     | `RegExp` or `{value, message}`      | Match regex pattern |
+| `minLength` | `number` or `{value, message}`      | Minimum length      |
+| `maxLength` | `number` or `{value, message}`      | Maximum length      |
+| `refine`    | `(value: string) => true \| string` | Custom validation   |
 
 ### Number Rules
 
-| Rule       | Type                                | Description                          |
-| ---------- | ----------------------------------- | ------------------------------------ |
-| `min`      | `number` or `{value, message}`      | Minimum value                        |
-| `max`      | `number` or `{value, message}`      | Maximum value                        |
-| `integer`  | `true` or `{value, message}`        | Must be integer                      |
-| `positive` | `true` or `{value, message}`        | Must be > 0                          |
-| `negative` | `true` or `{value, message}`        | Must be < 0                          |
-| `oneOf`    | `number[]` or `{value, message}`    | One of allowed values (runtime only) |
-| `refine`   | `(value: number) => true \| string` | Custom validation                    |
+| Rule       | Type                                | Description       |
+| ---------- | ----------------------------------- | ----------------- |
+| `min`      | `number` or `{value, message}`      | Minimum value     |
+| `max`      | `number` or `{value, message}`      | Maximum value     |
+| `integer`  | `true` or `{value, message}`        | Must be integer   |
+| `positive` | `true` or `{value, message}`        | Must be > 0       |
+| `negative` | `true` or `{value, message}`        | Must be < 0       |
+| `refine`   | `(value: number) => true \| string` | Custom validation |
 
 ### Boolean Rules
 

@@ -31,8 +31,4 @@ export const stringRules = {
     check: (value: string, max: number) => value.length <= max,
     message: (max: number) => `Must be at most ${max} characters`,
   },
-  oneOf: {
-    check: <V extends string>(value: string, values: readonly V[]) => values.includes(value as V),
-    message: <V extends string>(values: readonly V[]) => `Must be one of: ${values.join(", ")}`,
-  },
 } as const satisfies Record<string, RuleSpec<string, never[]>>;

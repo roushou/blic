@@ -51,8 +51,6 @@ export type StringValidationRules = {
   minLength?: RuleValue<number>;
   /** Maximum string length */
   maxLength?: RuleValue<number>;
-  /** Must be one of the specified values */
-  oneOf?: RuleValue<readonly string[]>;
   /** Custom validation function */
   refine?: (value: string) => ValidationResult;
 };
@@ -77,8 +75,6 @@ export type NumberValidationRules = {
   positive?: RuleValue<true>;
   /** Must be negative (< 0) */
   negative?: RuleValue<true>;
-  /** Must be one of the specified values */
-  oneOf?: RuleValue<readonly number[]>;
   /** Custom validation function */
   refine?: (value: number) => ValidationResult;
 };
