@@ -16,6 +16,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./docs": "./src/docs/index.ts",
     "./prompt": "./src/prompt/index.ts",
     "./testing": "./src/testing/index.ts",
     "./package.json": "./package.json"

@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 
-import { build, config, dev, init, playground, profile } from "./commands/index.ts";
+import { build, config, dev, docs, init, playground, profile } from "./commands/index.ts";
 import { color, defineCli } from "boune";
 import { debug, debugSection, setVerbose } from "./logger.ts";
 import { loadConfig, resolveAlias } from "./config/index.ts";
 import { checkForUpdates } from "./update-checker.ts";
 import packageJson from "../package.json";
 
-const cli = defineCli({
+export const cli = defineCli({
   name: "boune",
   version: packageJson.version,
   description: "Boune CLI - Initialize projects and manage configurations",
@@ -18,6 +18,7 @@ const cli = defineCli({
     config,
     profile,
     playground,
+    docs,
   },
   globalOptions: {
     verbose: {
@@ -85,4 +86,7 @@ async function main() {
   }
 }
 
-main();
+// Only run main when executed directly (not when imported)
+if (import.meta.main) {
+  main();
+}
