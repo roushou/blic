@@ -1,5 +1,5 @@
 import { color, defineCommand } from "boune";
-import { confirm, editor, list, multiselect, select, text, toggle } from "boune/prompt";
+import { confirm, date, editor, list, multiselect, select, text, toggle } from "boune/prompt";
 
 export type PromptType =
   | "text"
@@ -8,7 +8,8 @@ export type PromptType =
   | "multiselect"
   | "editor"
   | "toggle"
-  | "list";
+  | "list"
+  | "date";
 
 export interface SelectOption {
   label: string;
@@ -35,6 +36,7 @@ export const playground = defineCommand({
           { label: "editor", value: "editor", hint: "Open $EDITOR for long text" },
           { label: "toggle", value: "toggle", hint: "Visual on/off switch" },
           { label: "list", value: "list", hint: "Comma-separated list input" },
+          { label: "date", value: "date", hint: "Interactive calendar date picker" },
           { label: "Exit", value: "exit" as PromptType, hint: "Exit playground" },
         ],
       });
@@ -67,6 +69,9 @@ export const playground = defineCommand({
           break;
         case "list":
           await runListDemo();
+          break;
+        case "date":
+          await runDateDemo();
           break;
       }
 
@@ -320,6 +325,55 @@ async function runListDemo(): Promise<void> {
   });
 }
 
+async function runDateDemo(): Promise<void> {
+  console.log(color.bold("Configure date prompt:\n"));
+
+  const message = await text({
+    message: "Prompt message:",
+    placeholder: "Select a date:",
+    default: "Select a date:",
+  });
+
+  const format = await select({
+    message: "Date format:",
+    options: [
+      { label: "YYYY-MM-DD", value: "YYYY-MM-DD", hint: "ISO format (2024-12-25)" },
+      { label: "MM/DD/YYYY", value: "MM/DD/YYYY", hint: "US format (12/25/2024)" },
+      { label: "DD/MM/YYYY", value: "DD/MM/YYYY", hint: "EU format (25/12/2024)" },
+    ],
+  });
+
+  const useMin = await confirm({
+    message: "Set minimum date (today)?",
+    default: false,
+  });
+
+  const useMax = await confirm({
+    message: "Set maximum date (30 days from now)?",
+    default: false,
+  });
+
+  console.log(color.dim("\n--- Running your prompt ---\n"));
+
+  const today = new Date();
+  const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const result = await date({
+    message,
+    format: format as "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY",
+    min: useMin ? today : undefined,
+    max: useMax ? thirtyDaysFromNow : undefined,
+  });
+
+  printResult(result.toISOString().split("T")[0]);
+  printCodeSnippet("date", {
+    message,
+    format,
+    min: useMin ? "new Date()" : undefined,
+    max: useMax ? "new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)" : undefined,
+  });
+}
+
 async function buildSelectOptions(): Promise<SelectOption[]> {
   const options: SelectOption[] = [];
 
@@ -414,6 +468,8 @@ export function getVariableName(type: PromptType): string {
       return "enabled";
     case "list":
       return "items";
+    case "date":
+      return "selectedDate";
   }
 }
 

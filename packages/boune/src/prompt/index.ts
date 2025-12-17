@@ -8,5 +8,6 @@ export { filepath, type FilepathOptions } from "./filepath.ts";
 export { editor, type EditorOptions } from "./editor.ts";
 export { toggle, type ToggleOptions } from "./toggle.ts";
 export { list, type ListOptions } from "./list.ts";
+export { date, type DateOptions } from "./date.ts";
 export { closeStdin } from "./stdin.ts";
 export { PromptCancelledError, PromptMaxRetriesError } from "./core/errors.ts";
