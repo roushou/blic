@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { build, config, dev, docs, init, playground, profile } from "./commands/index.ts";
+import { build, config, dev, devtools, docs, init, playground, profile } from "./commands/index.ts";
 import { color, defineCli } from "boune";
 import { debug, debugSection, setVerbose } from "./logger.ts";
 import { loadConfig, resolveAlias } from "./config/index.ts";
@@ -14,6 +14,7 @@ export const cli = defineCli({
   commands: {
     init,
     dev,
+    devtools,
     build,
     config,
     profile,
