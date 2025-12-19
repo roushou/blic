@@ -1,16 +1,36 @@
-import { color, defineCommand } from "boune";
-import { confirm, date, editor, form, list, multiselect, select, text, toggle } from "boune/prompt";
+import {
+  PromptCancelledError,
+  autocomplete,
+  confirm,
+  date,
+  editor,
+  filepath,
+  form,
+  list,
+  multiselect,
+  number,
+  password,
+  select,
+  text,
+  toggle,
+} from "boune/prompt";
+import { color, createDraft, defineCommand } from "boune";
 
 export type PromptType =
   | "text"
+  | "password"
+  | "number"
   | "confirm"
   | "select"
   | "multiselect"
+  | "autocomplete"
+  | "filepath"
   | "editor"
   | "toggle"
   | "list"
   | "date"
-  | "form";
+  | "form"
+  | "draft";
 
 export interface SelectOption {
   label: string;
@@ -26,61 +46,89 @@ export const playground = defineCommand({
     console.log(color.bold(color.cyan("  Boune Prompt Playground")));
     console.log(color.dim("  Test and explore different prompt types\n"));
 
-    while (true) {
-      const promptType = await select<PromptType>({
-        message: "Select a prompt type to try:",
-        options: [
-          { label: "text", value: "text", hint: "Single-line text input" },
-          { label: "confirm", value: "confirm", hint: "Yes/No confirmation" },
-          { label: "select", value: "select", hint: "Single selection from list" },
-          { label: "multiselect", value: "multiselect", hint: "Multiple selections from list" },
-          { label: "editor", value: "editor", hint: "Open $EDITOR for long text" },
-          { label: "toggle", value: "toggle", hint: "Visual on/off switch" },
-          { label: "list", value: "list", hint: "Comma-separated list input" },
-          { label: "date", value: "date", hint: "Interactive calendar date picker" },
-          { label: "form", value: "form", hint: "Multi-field form input" },
-          { label: "Exit", value: "exit" as PromptType, hint: "Exit playground" },
-        ],
-      });
+    try {
+      while (true) {
+        const promptType = await select<PromptType>({
+          message: "Select a prompt type to try:",
+          options: [
+            { label: "text", value: "text", hint: "Single-line text input" },
+            { label: "password", value: "password", hint: "Hidden password input" },
+            { label: "number", value: "number", hint: "Numeric input with validation" },
+            { label: "confirm", value: "confirm", hint: "Yes/No confirmation" },
+            { label: "select", value: "select", hint: "Single selection from list" },
+            { label: "multiselect", value: "multiselect", hint: "Multiple selections from list" },
+            { label: "autocomplete", value: "autocomplete", hint: "Searchable selection" },
+            { label: "filepath", value: "filepath", hint: "File path with completion" },
+            { label: "editor", value: "editor", hint: "Open $EDITOR for long text" },
+            { label: "toggle", value: "toggle", hint: "Visual on/off switch" },
+            { label: "list", value: "list", hint: "Comma-separated list input" },
+            { label: "date", value: "date", hint: "Interactive calendar date picker" },
+            { label: "form", value: "form", hint: "Multi-field form input" },
+            { label: "draft", value: "draft", hint: "Live-updating multi-line output" },
+            { label: "Exit", value: "exit" as PromptType, hint: "Exit playground" },
+          ],
+        });
 
-      if (promptType === ("exit" as PromptType)) {
-        console.log(color.dim("\nGoodbye!\n"));
-        break;
+        if (promptType === ("exit" as PromptType)) {
+          console.log(color.dim("\nGoodbye!\n"));
+          break;
+        }
+
+        console.log("");
+
+        switch (promptType) {
+          case "text":
+            await runTextDemo();
+            break;
+          case "password":
+            await runPasswordDemo();
+            break;
+          case "number":
+            await runNumberDemo();
+            break;
+          case "confirm":
+            await runConfirmDemo();
+            break;
+          case "select":
+            await runSelectDemo();
+            break;
+          case "multiselect":
+            await runMultiselectDemo();
+            break;
+          case "autocomplete":
+            await runAutocompleteDemo();
+            break;
+          case "filepath":
+            await runFilepathDemo();
+            break;
+          case "editor":
+            await runEditorDemo();
+            break;
+          case "toggle":
+            await runToggleDemo();
+            break;
+          case "list":
+            await runListDemo();
+            break;
+          case "date":
+            await runDateDemo();
+            break;
+          case "form":
+            await runFormDemo();
+            break;
+          case "draft":
+            await runDraftDemo();
+            break;
+        }
+
+        console.log("");
       }
-
-      console.log("");
-
-      switch (promptType) {
-        case "text":
-          await runTextDemo();
-          break;
-        case "confirm":
-          await runConfirmDemo();
-          break;
-        case "select":
-          await runSelectDemo();
-          break;
-        case "multiselect":
-          await runMultiselectDemo();
-          break;
-        case "editor":
-          await runEditorDemo();
-          break;
-        case "toggle":
-          await runToggleDemo();
-          break;
-        case "list":
-          await runListDemo();
-          break;
-        case "date":
-          await runDateDemo();
-          break;
-        case "form":
-          await runFormDemo();
-          break;
+    } catch (err) {
+      if (err instanceof PromptCancelledError) {
+        console.log(color.dim("\n\nGoodbye!\n"));
+        return;
       }
-
-      console.log("");
+      throw err;
     }
   },
 });
@@ -119,6 +167,79 @@ async function runTextDemo(): Promise<void> {
     message,
     placeholder: placeholder || undefined,
     default: defaultValue || undefined,
+  });
+}
+
+async function runPasswordDemo(): Promise<void> {
+  console.log(color.bold("Configure password prompt:\n"));
+
+  const message = await text({
+    message: "Prompt message:",
+    placeholder: "Enter your password:",
+    default: "Enter your password:",
+  });
+
+  const useMask = await confirm({
+    message: "Show mask characters?",
+    default: true,
+  });
+
+  console.log(color.dim("\n--- Running your prompt ---\n"));
+
+  const _result = await password({
+    message,
+    mask: useMask ? "*" : undefined,
+  });
+
+  printResult("(hidden)");
+  printCodeSnippet("password", {
+    message,
+    mask: useMask ? "*" : undefined,
+  });
+}
+
+async function runNumberDemo(): Promise<void> {
+  console.log(color.bold("Configure number prompt:\n"));
+
+  const message = await text({
+    message: "Prompt message:",
+    placeholder: "Enter a number:",
+    default: "Enter a number:",
+  });
+
+  const minValue = await text({
+    message: "Minimum value (optional):",
+    placeholder: "",
+    default: "",
+  });
+
+  const maxValue = await text({
+    message: "Maximum value (optional):",
+    placeholder: "",
+    default: "",
+  });
+
+  const stepValue = await text({
+    message: "Step value (optional):",
+    placeholder: "1",
+    default: "",
+  });
+
+  console.log(color.dim("\n--- Running your prompt ---\n"));
+
+  const result = await number({
+    message,
+    min: minValue ? parseFloat(minValue) : undefined,
+    max: maxValue ? parseFloat(maxValue) : undefined,
+    step: stepValue ? parseFloat(stepValue) : undefined,
+  });
+
+  printResult(result);
+  printCodeSnippet("number", {
+    message,
+    min: minValue ? parseFloat(minValue) : undefined,
+    max: maxValue ? parseFloat(maxValue) : undefined,
+    step: stepValue ? parseFloat(stepValue) : undefined,
   });
 }
 
@@ -197,6 +318,70 @@ async function runMultiselectDemo(): Promise<void> {
 
   printResult(result);
   printCodeSnippet("multiselect", { message, options, required });
+}
+
+async function runAutocompleteDemo(): Promise<void> {
+  console.log(color.bold("Configure autocomplete prompt:\n"));
+
+  const message = await text({
+    message: "Prompt message:",
+    placeholder: "Search for a language:",
+    default: "Search for a language:",
+  });
+
+  console.log(color.dim("\nUsing demo options: JavaScript, TypeScript, Python, Ruby, Go, Rust\n"));
+
+  console.log(color.dim("--- Running your prompt ---\n"));
+
+  const result = await autocomplete({
+    message,
+    options: [
+      { label: "JavaScript", value: "javascript" },
+      { label: "TypeScript", value: "typescript" },
+      { label: "Python", value: "python" },
+      { label: "Ruby", value: "ruby" },
+      { label: "Go", value: "go" },
+      { label: "Rust", value: "rust" },
+    ],
+  });
+
+  printResult(result);
+  printCodeSnippet("autocomplete", {
+    message,
+    options: [
+      { label: "JavaScript", value: "javascript" },
+      { label: "TypeScript", value: "typescript" },
+      { label: "Python", value: "python" },
+    ],
+  });
+}
+
+async function runFilepathDemo(): Promise<void> {
+  console.log(color.bold("Configure filepath prompt:\n"));
+
+  const message = await text({
+    message: "Prompt message:",
+    placeholder: "Select a file:",
+    default: "Select a file:",
+  });
+
+  const onlyDirectories = await confirm({
+    message: "Only show directories?",
+    default: false,
+  });
+
+  console.log(color.dim("\n--- Running your prompt ---\n"));
+
+  const result = await filepath({
+    message,
+    directoryOnly: true,
+  });
+
+  printResult(result);
+  printCodeSnippet("filepath", {
+    message,
+    onlyDirectories: onlyDirectories || undefined,
+  });
 }
 
 async function runEditorDemo(): Promise<void> {
@@ -419,6 +604,90 @@ async function runFormDemo(): Promise<void> {
   });
 }
 
+function progressBar(percent: number, width = 20): string {
+  const filled = Math.floor((percent / 100) * width);
+  const empty = width - filled;
+  return color.cyan("█".repeat(filled)) + color.dim("░".repeat(empty));
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+async function runDraftDemo(): Promise<void> {
+  console.log(color.bold("Draft Output Demo: Parallel Downloads\n"));
+  console.log(color.dim("Simulating docker-style parallel layer downloads.\n"));
+
+  await Bun.sleep(300);
+
+  const draft = createDraft();
+
+  // Layer info: [name, totalSize, speed]
+  const layers: [string, number, number][] = [
+    ["sha256:a3ed95", 2.4 * 1024 * 1024, 1.8],
+    ["sha256:f18bc8", 8.7 * 1024 * 1024, 2.4],
+    ["sha256:d9e134", 4.2 * 1024 * 1024, 1.2],
+    ["sha256:7b2314", 12.1 * 1024 * 1024, 3.1],
+    ["sha256:9c8a22", 1.8 * 1024 * 1024, 0.9],
+  ];
+
+  const lines = layers.map(([name]) => draft.addLine(`${name}: waiting...`));
+  const progress = layers.map(() => 0);
+  const downloaded = layers.map(() => 0);
+  const completed = layers.map(() => false);
+
+  // Run downloads in parallel with different speeds
+  const interval = 50;
+  const startTime = Date.now();
+
+  while (!completed.every(Boolean)) {
+    await Bun.sleep(interval);
+
+    for (let i = 0; i < layers.length; i++) {
+      if (completed[i]) continue;
+
+      const [name, totalSize, speed] = layers[i];
+      // Add some randomness to speed
+      const actualSpeed = speed * (0.7 + Math.random() * 0.6);
+      downloaded[i] += actualSpeed * 1024 * 1024 * (interval / 1000);
+      progress[i] = Math.min(100, (downloaded[i] / totalSize) * 100);
+
+      if (progress[i] >= 100) {
+        completed[i] = true;
+        lines[i].done(`${name}: ${formatBytes(totalSize)} ${color.dim("— complete")}`);
+      } else {
+        const bar = progressBar(progress[i]);
+        const pct = `${Math.floor(progress[i])}%`.padStart(4);
+        const size = `${formatBytes(downloaded[i])}/${formatBytes(totalSize)}`;
+        const speedStr = color.dim(`${actualSpeed.toFixed(1)}MB/s`);
+        lines[i].update(`${name}: ${bar} ${pct} ${size} ${speedStr}`);
+      }
+    }
+  }
+
+  draft.stop();
+
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(color.dim(`\nCompleted in ${elapsed}s\n`));
+
+  console.log(color.bold("Code:"));
+  console.log(color.dim("─".repeat(40)));
+  console.log(color.cyan(`  import { createDraft } from "boune";`));
+  console.log(color.cyan(``));
+  console.log(color.cyan(`  const draft = createDraft();`));
+  console.log(color.cyan(`  const layer1 = draft.addLine("Downloading...");`));
+  console.log(color.cyan(`  const layer2 = draft.addLine("Downloading...");`));
+  console.log(color.cyan(``));
+  console.log(color.cyan(`  // Update with progress bars`));
+  console.log(color.cyan(`  layer1.update("████████░░░░ 67% 4.2MB/6.3MB");`));
+  console.log(color.cyan(`  layer1.done("layer1: 6.3MB — complete");`));
+  console.log(color.cyan(``));
+  console.log(color.cyan(`  draft.stop();`));
+  console.log(color.dim("─".repeat(40)));
+}
+
 async function buildSelectOptions(): Promise<SelectOption[]> {
   const options: SelectOption[] = [];
 
@@ -501,12 +770,20 @@ export function getVariableName(type: PromptType): string {
   switch (type) {
     case "text":
       return "answer";
+    case "password":
+      return "secret";
+    case "number":
+      return "value";
     case "confirm":
       return "confirmed";
     case "select":
       return "selected";
     case "multiselect":
       return "selections";
+    case "autocomplete":
+      return "match";
+    case "filepath":
+      return "path";
     case "editor":
       return "content";
     case "toggle":
@@ -517,6 +794,8 @@ export function getVariableName(type: PromptType): string {
       return "selectedDate";
     case "form":
       return "formData";
+    case "draft":
+      return "draft";
   }
 }
 
