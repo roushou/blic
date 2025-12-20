@@ -624,45 +624,47 @@ async function runDraftDemo(): Promise<void> {
 
   const draft = createDraft();
 
-  // Layer info: [name, totalSize, speed]
-  const layers: [string, number, number][] = [
-    ["sha256:a3ed95", 2.4 * 1024 * 1024, 1.8],
-    ["sha256:f18bc8", 8.7 * 1024 * 1024, 2.4],
-    ["sha256:d9e134", 4.2 * 1024 * 1024, 1.2],
-    ["sha256:7b2314", 12.1 * 1024 * 1024, 3.1],
-    ["sha256:9c8a22", 1.8 * 1024 * 1024, 0.9],
-  ];
-
-  const lines = layers.map(([name]) => draft.addLine(`${name}: waiting...`));
-  const progress = layers.map(() => 0);
-  const downloaded = layers.map(() => 0);
-  const completed = layers.map(() => false);
+  // Combine layer info with mutable state into single objects
+  const layers = [
+    { name: "sha256:a3ed95", totalSize: 2.4 * 1024 * 1024, speed: 1.8 },
+    { name: "sha256:f18bc8", totalSize: 8.7 * 1024 * 1024, speed: 2.4 },
+    { name: "sha256:d9e134", totalSize: 4.2 * 1024 * 1024, speed: 1.2 },
+    { name: "sha256:7b2314", totalSize: 12.1 * 1024 * 1024, speed: 3.1 },
+    { name: "sha256:9c8a22", totalSize: 1.8 * 1024 * 1024, speed: 0.9 },
+  ].map((layer) => ({
+    ...layer,
+    line: draft.addLine(`${layer.name}: waiting...`),
+    progress: 0,
+    downloaded: 0,
+    completed: false,
+  }));
 
   // Run downloads in parallel with different speeds
   const interval = 50;
   const startTime = Date.now();
 
-  while (!completed.every(Boolean)) {
+  while (!layers.every((l) => l.completed)) {
     await Bun.sleep(interval);
 
-    for (let i = 0; i < layers.length; i++) {
-      if (completed[i]) continue;
+    for (const layer of layers) {
+      if (layer.completed) continue;
 
-      const [name, totalSize, speed] = layers[i];
       // Add some randomness to speed
-      const actualSpeed = speed * (0.7 + Math.random() * 0.6);
-      downloaded[i] += actualSpeed * 1024 * 1024 * (interval / 1000);
-      progress[i] = Math.min(100, (downloaded[i] / totalSize) * 100);
+      const actualSpeed = layer.speed * (0.7 + Math.random() * 0.6);
+      layer.downloaded += actualSpeed * 1024 * 1024 * (interval / 1000);
+      layer.progress = Math.min(100, (layer.downloaded / layer.totalSize) * 100);
 
-      if (progress[i] >= 100) {
-        completed[i] = true;
-        lines[i].done(`${name}: ${formatBytes(totalSize)} ${color.dim("— complete")}`);
+      if (layer.progress >= 100) {
+        layer.completed = true;
+        layer.line.done(
+          `${layer.name}: ${formatBytes(layer.totalSize)} ${color.dim("— complete")}`,
+        );
       } else {
-        const bar = progressBar(progress[i]);
-        const pct = `${Math.floor(progress[i])}%`.padStart(4);
-        const size = `${formatBytes(downloaded[i])}/${formatBytes(totalSize)}`;
+        const bar = progressBar(layer.progress);
+        const pct = `${Math.floor(layer.progress)}%`.padStart(4);
+        const size = `${formatBytes(layer.downloaded)}/${formatBytes(layer.totalSize)}`;
         const speedStr = color.dim(`${actualSpeed.toFixed(1)}MB/s`);
-        lines[i].update(`${name}: ${bar} ${pct} ${size} ${speedStr}`);
+        layer.line.update(`${layer.name}: ${bar} ${pct} ${size} ${speedStr}`);
       }
     }
   }
