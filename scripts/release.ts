@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
-import { defineCli, defineCommand, error, info, success } from "../packages/boune/src/index.ts";
+import { defineCli, defineCommand } from "../packages/boune/src/index.ts";
+import { formatError, formatInfo, formatSuccess } from "../packages/boune/src/x/logger/index.ts";
 import bouneJsrPkg from "../packages/boune/jsr.json";
 import bounePkg from "../packages/boune/package.json";
 import { confirm } from "../packages/boune/src/prompt/index.ts";
@@ -174,14 +175,14 @@ function buildReleasePlan(
 }
 
 function printReleasePlan(plan: ReleasePlan, dryRun: boolean): void {
-  console.log(info("\nRelease Plan:\n"));
+  console.log(formatInfo("\nRelease Plan:\n"));
 
   for (const { pkg, newVersion } of plan.packages) {
     console.log(`  ${pkg.name}: ${pkg.version} → ${newVersion}`);
   }
 
   if (dryRun) {
-    console.log(info("\nDry run mode - no changes will be made\n"));
+    console.log(formatInfo("\nDry run mode - no changes will be made\n"));
   }
 
   console.log("");
@@ -189,13 +190,13 @@ function printReleasePlan(plan: ReleasePlan, dryRun: boolean): void {
 
 async function executePlan(plan: ReleasePlan): Promise<void> {
   for (const task of plan.tasks) {
-    console.log(info(task.name));
+    console.log(formatInfo(task.name));
     const ok = await task.run();
     if (!ok) {
-      console.log(error(`Failed: ${task.name}`));
+      console.log(formatError(`Failed: ${task.name}`));
       process.exit(1);
     }
-    console.log(success(task.name));
+    console.log(formatSuccess(task.name));
   }
 }
 
@@ -223,14 +224,14 @@ function buildBumpPlan(packages: Package[], bumpType: BumpType, dryRun: boolean)
 }
 
 function printBumpPlan(plan: BumpPlan, dryRun: boolean): void {
-  console.log(info("\nBump Plan:\n"));
+  console.log(formatInfo("\nBump Plan:\n"));
 
   for (const { pkg, newVersion } of plan.packages) {
     console.log(`  ${pkg.name}: ${pkg.version} → ${newVersion}`);
   }
 
   if (dryRun) {
-    console.log(info("\nDry run mode - no changes will be made\n"));
+    console.log(formatInfo("\nDry run mode - no changes will be made\n"));
   }
 
   console.log("");
@@ -271,7 +272,7 @@ const bumpCommand = defineCommand({
     const dryRun = !execute;
 
     if (!["patch", "minor", "major"].includes(bumpType)) {
-      console.log(error("--type must be one of: patch, minor, major"));
+      console.log(formatError("--type must be one of: patch, minor, major"));
       process.exit(1);
     }
 
@@ -279,7 +280,7 @@ const bumpCommand = defineCommand({
       packageName === "all" ? PACKAGES : PACKAGES.filter((p) => p.name === packageName);
 
     if (packages.length === 0) {
-      console.log(error(`Package "${packageName}" not found`));
+      console.log(formatError(`Package "${packageName}" not found`));
       process.exit(1);
     }
 
@@ -289,13 +290,13 @@ const bumpCommand = defineCommand({
 
     const confirmed = await confirm({ message: "Proceed with bump?" });
     if (!confirmed) {
-      console.log(info("\nBump cancelled.\n"));
+      console.log(formatInfo("\nBump cancelled.\n"));
       process.exit(0);
     }
 
     await executePlan(plan);
 
-    console.log(success("\nBump complete!\n"));
+    console.log(formatSuccess("\nBump complete!\n"));
   },
 });
 
@@ -332,7 +333,7 @@ const releaseCommand = defineCommand({
     const dryRun = !execute;
 
     if (!["patch", "minor", "major"].includes(bumpType)) {
-      console.log(error("--bump must be one of: patch, minor, major"));
+      console.log(formatError("--bump must be one of: patch, minor, major"));
       process.exit(1);
     }
 
@@ -340,7 +341,7 @@ const releaseCommand = defineCommand({
       packageName === "all" ? PACKAGES : PACKAGES.filter((p) => p.name === packageName);
 
     if (packages.length === 0) {
-      console.log(error(`Package "${packageName}" not found`));
+      console.log(formatError(`Package "${packageName}" not found`));
       process.exit(1);
     }
 
@@ -354,13 +355,13 @@ const releaseCommand = defineCommand({
 
     const confirmed = await confirm({ message: "Proceed with release?" });
     if (!confirmed) {
-      console.log(info("\nRelease cancelled.\n"));
+      console.log(formatInfo("\nRelease cancelled.\n"));
       process.exit(0);
     }
 
     await executePlan(plan);
 
-    console.log(success("\nRelease complete!\n"));
+    console.log(formatSuccess("\nRelease complete!\n"));
   },
 });
 

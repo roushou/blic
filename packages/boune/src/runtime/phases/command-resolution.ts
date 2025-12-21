@@ -1,7 +1,7 @@
 import type { CommandConfig, Token } from "../../types/index.ts";
 import { formatSuggestions, suggestCommands } from "../../output/suggest.ts";
 import type { Phase } from "./types.ts";
-import { error as formatError } from "../../output/messages.ts";
+import { formatError } from "../../x/logger/index.ts";
 import { generateCliHelp } from "../../output/help.ts";
 
 /**

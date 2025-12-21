@@ -2,10 +2,12 @@
 
 import { build, config, dev, devtools, docs, init, playground, profile } from "./commands/index.ts";
 import { color, defineCli } from "boune";
-import { debug, debugSection, setVerbose } from "./logger.ts";
 import { loadConfig, resolveAlias } from "./config/index.ts";
 import { checkForUpdates } from "boune/x/update-checker";
+import { createLogger } from "boune/x/logger";
 import packageJson from "../package.json";
+
+const logger = createLogger({ level: "info" });
 
 export const cli = defineCli({
   name: "boune",
@@ -32,21 +34,23 @@ export const cli = defineCli({
     async (ctx, next) => {
       const verbose = ctx.options.verbose as boolean;
       if (verbose) {
-        setVerbose(true);
-        debug("Verbose mode enabled");
-        debug(`Command: ${ctx.command?.name ?? "none"}`);
-        debugSection("Parsed arguments", ctx.args);
-        debugSection("Parsed options", ctx.options);
+        logger.setLevel("debug");
+        logger.debug("Verbose mode enabled");
+        logger.debug(`Command: ${ctx.command?.name ?? "none"}`);
+        logger.debug(`Arguments: ${JSON.stringify(ctx.args)}`);
+        logger.debug(`Options: ${JSON.stringify(ctx.options)}`);
 
         // Load and show config info
         const resolvedConfig = await loadConfig({
           profile: ctx.options.profile as string | undefined,
         });
-        debugSection("Config", {
-          source: resolvedConfig.source,
-          activeProfile: resolvedConfig.activeProfile ?? "none",
-          defaults: resolvedConfig.defaults,
-        });
+        logger.debug(
+          `Config: ${JSON.stringify({
+            source: resolvedConfig.source,
+            activeProfile: resolvedConfig.activeProfile ?? "none",
+            defaults: resolvedConfig.defaults,
+          })}`,
+        );
         console.log("");
       }
       await next();

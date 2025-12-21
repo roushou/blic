@@ -4,9 +4,6 @@ export { color, supportsColor } from "./color.ts";
 // Data formatters
 export { table, list, keyValue } from "./format.ts";
 
-// Status messages
-export { error, warning, success, info } from "./messages.ts";
-
 // Progress indicators
 export { createSpinner, type Spinner, type SpinnerOptions } from "./spinner.ts";
 export { createProgressBar, type ProgressBar, type ProgressBarOptions } from "./progress.ts";

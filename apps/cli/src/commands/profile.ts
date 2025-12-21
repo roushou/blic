@@ -1,4 +1,5 @@
-import { color, defineCommand, error, info, success, warning } from "boune";
+import { color, defineCommand } from "boune";
+import { formatError, formatInfo, formatSuccess, formatWarning } from "boune/x/logger";
 import { getAvailableProfiles, loadConfig } from "../config/index.ts";
 import { select } from "boune/prompt";
 
@@ -38,7 +39,7 @@ export const profile = defineCommand({
         break;
 
       default:
-        error(`Unknown action: ${action}`);
+        console.error(formatError(`Unknown action: ${action}`));
         console.log(color.dim("\nAvailable actions: list, show, use"));
         process.exit(1);
     }
@@ -49,7 +50,7 @@ function listProfiles(profiles: string[], activeProfile?: string): void {
   console.log("");
 
   if (profiles.length === 0) {
-    warning("No profiles configured");
+    console.log(formatWarning("No profiles configured"));
     console.log(color.dim("\nAdd profiles to your boune.config.ts:"));
     console.log(
       color.dim(`
@@ -90,7 +91,7 @@ async function showProfile(
   profiles: string[],
 ): Promise<void> {
   if (profiles.length === 0) {
-    warning("No profiles configured");
+    console.log(formatWarning("No profiles configured"));
     return;
   }
 
@@ -105,7 +106,7 @@ async function showProfile(
 
   const profileConfig = config.profiles?.[profileName];
   if (!profileConfig) {
-    error(`Profile not found: ${profileName}`);
+    console.error(formatError(`Profile not found: ${profileName}`));
     console.log(color.dim(`\nAvailable profiles: ${profiles.join(", ")}`));
     process.exit(1);
   }
@@ -148,7 +149,7 @@ async function showProfile(
 
 async function useProfile(name: string | undefined, profiles: string[]): Promise<void> {
   if (profiles.length === 0) {
-    warning("No profiles configured");
+    console.log(formatWarning("No profiles configured"));
     return;
   }
 
@@ -162,7 +163,7 @@ async function useProfile(name: string | undefined, profiles: string[]): Promise
   }
 
   if (!profiles.includes(profileName)) {
-    error(`Profile not found: ${profileName}`);
+    console.error(formatError(`Profile not found: ${profileName}`));
     console.log(color.dim(`\nAvailable profiles: ${profiles.join(", ")}`));
     process.exit(1);
   }
@@ -171,7 +172,7 @@ async function useProfile(name: string | undefined, profiles: string[]): Promise
   const config = await loadConfig({ profile: profileName });
 
   console.log("");
-  success(`Activated profile: ${profileName}`);
+  console.log(formatSuccess(`Activated profile: ${profileName}`));
   console.log("");
 
   // Show what was applied
@@ -184,7 +185,9 @@ async function useProfile(name: string | undefined, profiles: string[]): Promise
     console.log("");
   }
 
-  info("Use --profile=" + profileName + " to use this profile with other commands");
+  console.log(
+    formatInfo("Use --profile=" + profileName + " to use this profile with other commands"),
+  );
   console.log("");
 }
 
