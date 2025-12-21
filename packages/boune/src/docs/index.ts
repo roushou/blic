@@ -21,3 +21,6 @@ export {
 } from "./html.ts";
 
 export { serveDocs, serveDocsFromInfo } from "./server.ts";
+
+// Pre-built command factory
+export { createDocsCommand } from "./command.ts";
