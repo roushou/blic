@@ -1,62 +1,64 @@
 #!/usr/bin/env bun
 
-import { build, config, dev, devtools, docs, init, playground, profile } from "./commands/index.ts";
+import { build, config, dev, docs, init, playground, profile } from "./commands/index.ts";
 import { color, defineCli } from "boune";
 import { loadConfig, resolveAlias } from "./config/index.ts";
 import { checkForUpdates } from "boune/x/update-checker";
 import { createLogger } from "boune/x/logger";
 import packageJson from "../package.json";
+import { withDevtools } from "boune/devtools";
 
 const logger = createLogger({ level: "info" });
 
-export const cli = defineCli({
-  name: "boune",
-  version: packageJson.version,
-  description: "Boune CLI - Initialize projects and manage configurations",
-  commands: {
-    init,
-    dev,
-    devtools,
-    build,
-    config,
-    profile,
-    playground,
-    docs,
-  },
-  globalOptions: {
-    verbose: {
-      type: "boolean",
-      short: "v",
-      description: "Enable verbose output for debugging",
+export const cli = defineCli(
+  withDevtools({
+    name: "boune",
+    version: packageJson.version,
+    description: "Boune CLI - Initialize projects and manage configurations",
+    commands: {
+      init,
+      dev,
+      build,
+      config,
+      profile,
+      playground,
+      docs,
     },
-  },
-  middleware: [
-    async (ctx, next) => {
-      const verbose = ctx.options.verbose as boolean;
-      if (verbose) {
-        logger.setLevel("debug");
-        logger.debug("Verbose mode enabled");
-        logger.debug(`Command: ${ctx.command?.name ?? "none"}`);
-        logger.debug(`Arguments: ${JSON.stringify(ctx.args)}`);
-        logger.debug(`Options: ${JSON.stringify(ctx.options)}`);
+    globalOptions: {
+      verbose: {
+        type: "boolean",
+        short: "v",
+        description: "Enable verbose output for debugging",
+      },
+    },
+    middleware: [
+      async (ctx, next) => {
+        const verbose = ctx.options.verbose as boolean;
+        if (verbose) {
+          logger.setLevel("debug");
+          logger.debug("Verbose mode enabled");
+          logger.debug(`Command: ${ctx.command?.name ?? "none"}`);
+          logger.debug(`Arguments: ${JSON.stringify(ctx.args)}`);
+          logger.debug(`Options: ${JSON.stringify(ctx.options)}`);
 
-        // Load and show config info
-        const resolvedConfig = await loadConfig({
-          profile: ctx.options.profile as string | undefined,
-        });
-        logger.debug(
-          `Config: ${JSON.stringify({
-            source: resolvedConfig.source,
-            activeProfile: resolvedConfig.activeProfile ?? "none",
-            defaults: resolvedConfig.defaults,
-          })}`,
-        );
-        console.log("");
-      }
-      await next();
-    },
-  ],
-});
+          // Load and show config info
+          const resolvedConfig = await loadConfig({
+            profile: ctx.options.profile as string | undefined,
+          });
+          logger.debug(
+            `Config: ${JSON.stringify({
+              source: resolvedConfig.source,
+              activeProfile: resolvedConfig.activeProfile ?? "none",
+              defaults: resolvedConfig.defaults,
+            })}`,
+          );
+          console.log("");
+        }
+        await next();
+      },
+    ],
+  }),
+);
 
 async function main() {
   // Check for updates
@@ -69,9 +71,10 @@ async function main() {
   let args = process.argv.slice(2);
 
   // Expand aliases if the first arg might be an alias
-  if (args.length > 0 && !args[0].startsWith("-")) {
+  const firstArg = args[0];
+  if (firstArg && !firstArg.startsWith("-")) {
     const resolvedConfig = await loadConfig();
-    const expanded = resolveAlias(resolvedConfig, args[0]);
+    const expanded = resolveAlias(resolvedConfig, firstArg);
 
     if (expanded) {
       // Parse the expanded command and replace the alias

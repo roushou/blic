@@ -1,3 +1,10 @@
+// Utils
+export { detectCliEntry, loadCli } from "./utils.ts";
+export type { EntryDetectionOptions } from "./utils.ts";
+
+// Integration
+export { withDevtools } from "./with-devtools.ts";
+
 // Types
 export type {
   DevToolsOptions,
