@@ -34,16 +34,16 @@
     },
     "packages/boune": {
       "name": "boune",
-      "version": "0.9.0",
+      "version": "0.10.0",
     },
     "packages/create-boune": {
       "name": "create-boune",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "bin": {
         "create-boune": "./src/index.ts",
       },
       "dependencies": {
-        "boune": "^0.9.0",
+        "boune": "^0.10.0",
       },
     },
   },

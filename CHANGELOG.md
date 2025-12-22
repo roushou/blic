@@ -1,3 +1,35 @@
+## [cli-v0.10.0] - 2025-12-22
+
+### 🚀 Features
+
+- *(boune)* Add reusable update-checker utility to x/ namespace
+- *(x)* Add `x/open` utility for opening URLs and files
+- *(boune)* Add x/doctor utility for system diagnostics
+- *(output)* Add draft output for live-updating multi-line output
+- *(output)* Add configurable colors for spinner
+- *(prompt)* Implement password masking
+- *(playground)* Add spinner showcase
+- *(x)* Add `logger` utility
+- *(docs)* Add createDocsCommand factory for simplified command creation
+- *(devtools)* Add withDevtools wrapper for simplified integration
+
+### 🐛 Bug Fixes
+
+- *(devtools)* Use `bun:sqlite` instead of postgres client
+
+### 🚜 Refactor
+
+- *(validation)* Remove `oneOf` support
+- *(cli)* Consolidate parallel arrays into a single array of objects
+
+### 📚 Documentation
+
+- Update documentation website and README files
+
+### ⚙️ Miscellaneous Tasks
+
+- *(cli)* Add more examples to playground
+- Release `0.10.0`
 ## [cli-v0.9.0] - 2025-12-17
 
 ### 🚀 Features
@@ -55,6 +87,7 @@
 - *(prompt)* Declarative schema-based prompt architecture
 - *(output)* Split format.ts
 - *(create-boune)* Declarative API and auto-sync `boune` version
+- *(apps)* Use `choices` to narrow types
 
 ### 📚 Documentation
 
@@ -83,3 +116,4 @@
 - Bump versions
 - *(docs)* Setup biome with format and lint scripts
 - Release `v0.9.0` and add changelog
+- Make `oxfmt` ignore CHANGELOG.md

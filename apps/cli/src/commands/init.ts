@@ -234,7 +234,7 @@ async function generateProject(targetDir: string, options: ProjectOptions): Prom
       build: `bun build src/app.ts --compile --outfile=${options.name}`,
     },
     dependencies: {
-      boune: "^0.9.0",
+      boune: "^0.10.0",
     },
   };
 
