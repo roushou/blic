@@ -10,9 +10,11 @@ A modern CLI framework for [Bun](https://bun.sh).
 - **Auto-generated help** - `--help` and `--version` out of the box
 - **Argument parsing** - Required, optional, and variadic positional arguments
 - **Option parsing** - Short/long flags, typed values, defaults, environment variables
-- **Interactive prompts** - Text input, confirmations, selections
+- **Interactive prompts** - Text, password (with masking), select, confirm, and more
 - **Middleware** - Before/after hooks and error handling
 - **Output utilities** - Colors, tables, spinners, formatted messages
+- **Devtools** - Web dashboard for CLI inspection and debugging
+- **Auto documentation** - Generate interactive docs from your CLI schema
 - **Zero dependencies** - Built specifically for Bun's APIs
 
 ## Installation
@@ -292,6 +294,55 @@ console.log(table([
   ["Task 1", "Done"],
   ["Task 2", "Pending"],
 ]));
+```
+
+## Devtools
+
+Enable the devtools dashboard to inspect your CLI, capture events, and view live documentation:
+
+```ts
+import { defineCli } from "boune";
+import { withDevtools } from "boune/devtools";
+
+const cli = defineCli(withDevtools({
+  name: "myapp",
+  version: "1.0.0",
+  commands: { deploy, build },
+}));
+
+cli.run();
+```
+
+`withDevtools()` automatically adds:
+
+- **Event capture middleware** - Records command executions
+- **`devtools` command** - Starts the web dashboard
+
+```bash
+$ myapp devtools
+# Opens dashboard at http://localhost:4000
+```
+
+## Auto Documentation
+
+Generate interactive documentation from your CLI schema:
+
+```bash
+$ myapp docs
+# Serves documentation at http://localhost:4000
+```
+
+Or use the docs utilities directly:
+
+```ts
+import { createDocsCommand } from "boune/docs";
+
+const cli = defineCli({
+  name: "myapp",
+  commands: {
+    docs: createDocsCommand(),
+  },
+});
 ```
 
 ## Compile to Binary

@@ -12,10 +12,12 @@ Boune is a modern CLI framework built specifically for [Bun](https://bun.sh). It
 Everything you need in one package - no external dependencies required:
 
 - **Type-safe arguments & options** - Full TypeScript inference
-- **Interactive prompts** - Text, select, confirm, password, and more
+- **Interactive prompts** - Text, select, confirm, password (with masking), and more
 - **Beautiful output** - Colors, spinners, progress bars, tables
 - **Validation** - Chainable validators for input validation
 - **Shell completions** - Generate scripts for Bash, Zsh, and Fish
+- **Devtools dashboard** - Web UI for CLI inspection and debugging
+- **Auto documentation** - Generate interactive docs from your CLI schema
 
 ### Built for Bun
 
@@ -70,3 +72,4 @@ HELLO, WORLD!
 - [Quick Start](/docs/quick-start) - Install and create your first CLI
 - [Commands](/docs/commands) - Learn about defining commands
 - [Prompts](/docs/prompts) - Add interactive prompts
+- [Devtools](/docs/devtools) - Inspect and debug your CLI

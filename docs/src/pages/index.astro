@@ -418,10 +418,17 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
                   </tr>
                   <tr class="hover:bg-neon-blue/5 transition-colors">
                     <td class="py-3 px-4 text-gray-300">auto_docs</td>
-                    <td class="py-3 px-4 text-center text-neon-pink">◇</td>
+                    <td class="py-3 px-4 text-center text-neon-green text-lg">●</td>
                     <td class="py-3 px-4 text-center text-gray-600">○</td>
                     <td class="py-3 px-4 text-center text-gray-600">○</td>
                     <td class="py-3 px-4 text-center text-neon-green text-lg">●</td>
+                  </tr>
+                  <tr class="border-b border-gray-800/50 hover:bg-neon-blue/5 transition-colors bg-neon-green/5">
+                    <td class="py-3 px-4 text-neon-green">devtools</td>
+                    <td class="py-3 px-4 text-center text-neon-green text-lg">●</td>
+                    <td class="py-3 px-4 text-center text-gray-600">○</td>
+                    <td class="py-3 px-4 text-center text-gray-600">○</td>
+                    <td class="py-3 px-4 text-center text-gray-600">○</td>
                   </tr>
                 </tbody>
               </table>
@@ -476,7 +483,7 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
             </div>
             <h3 class="text-xl mb-4 text-neon-green">Interactive Prompts</h3>
             <p class="text-gray-400 text-sm leading-relaxed">
-              Text, password, select, confirm, autocomplete, and more. Build interactive CLIs with beautiful prompts out of the box.
+              Text, password (with masking), select, confirm, autocomplete, and more. Build interactive CLIs with beautiful prompts out of the box.
             </p>
           </div>
 
@@ -523,6 +530,28 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
               Generate shell completions for Bash, Zsh, and Fish. Give users tab completion for your CLI commands.
             </p>
           </div>
+
+          <!-- Card 7 -->
+          <div class="neon-box bg-black p-8 group">
+            <div class="h-16 w-16 bg-neon-pink text-black flex items-center justify-center mb-6 pixel-font text-2xl group-hover:animate-bounce">
+              <i data-lucide="layout-dashboard" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl mb-4 text-neon-pink">Devtools Dashboard</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Inspect your CLI with a web dashboard. Event capture, command visualization, and live documentation.
+            </p>
+          </div>
+
+          <!-- Card 8 -->
+          <div class="neon-box bg-black p-8 group">
+            <div class="h-16 w-16 bg-neon-yellow text-black flex items-center justify-center mb-6 pixel-font text-2xl group-hover:animate-bounce">
+              <i data-lucide="book-open" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl mb-4 text-neon-yellow">Auto Documentation</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Generate interactive documentation from your CLI schema. Serve docs locally with a single command.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -550,6 +579,7 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
           <button data-example="basic" class="example-btn active px-6 py-3 border-2 border-neon-pink bg-neon-pink text-black font-bold hover:scale-105 transition-transform">BASIC CLI</button>
           <button data-example="prompts" class="example-btn px-6 py-3 border-2 border-neon-blue text-neon-blue font-bold hover:bg-neon-blue hover:text-black hover:scale-105 transition-all">PROMPTS</button>
           <button data-example="middleware" class="example-btn px-6 py-3 border-2 border-neon-green text-neon-green font-bold hover:bg-neon-green hover:text-black hover:scale-105 transition-all">MIDDLEWARE</button>
+          <button data-example="devtools" class="example-btn px-6 py-3 border-2 border-neon-yellow text-neon-yellow font-bold hover:bg-neon-yellow hover:text-black hover:scale-105 transition-all">DEVTOOLS</button>
         </div>
 
         <div class="max-w-4xl mx-auto bg-black overflow-hidden border-4 border-neon-blue shadow-[0_0_30px_rgba(0,255,255,0.3),inset_0_0_30px_rgba(0,255,255,0.1)]">
@@ -619,7 +649,20 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
       <div class="container mx-auto px-4">
         <div class="pixel-font text-2xl text-neon-blue mb-6">BOUNE</div>
         <div class="flex justify-center space-x-6 mb-8">
-          <a href="https://github.com/roushou/boune" class="text-gray-500 hover:text-neon-pink transition-colors"><i data-lucide="github" class="w-6 h-6"></i></a>
+          <a
+            href="https://github.com/roushou/boune"
+            class="text-gray-500 hover:text-neon-pink transition-colors"
+          >
+            <i data-lucide="github" class="w-6 h-6"></i>
+          </a>
+          <a
+            href="https://x.com/kenjilau_"
+            class="text-gray-500 hover:text-neon-blue transition-colors"
+          >
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
         </div>
         <p class="text-gray-600 text-xs">
           MIT License
@@ -643,6 +686,8 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
       Github,
       Heart,
       Code,
+      LayoutDashboard,
+      BookOpen,
     } from 'lucide';
 
     const icons = {
@@ -657,7 +702,9 @@ import pressStart2pWoff2 from "@fontsource/press-start-2p/files/press-start-2p-l
       Check,
       Github,
       Heart,
-      Code
+      Code,
+      LayoutDashboard,
+      BookOpen,
     };
 
     createIcons({ icons });
@@ -805,7 +852,33 @@ cli.<span class="code-func">run</span>();`,
   commands: { deploy },
 });
 
-cli.<span class="code-func">run</span>();`
+cli.<span class="code-func">run</span>();`,
+
+      devtools: `<span class="code-comment">// Enable devtools with a single wrapper</span>
+<span class="code-keyword">import</span> { defineCli, defineCommand } <span class="code-keyword">from</span> <span class="code-string">"boune"</span>;
+<span class="code-keyword">import</span> { withDevtools } <span class="code-keyword">from</span> <span class="code-string">"boune/devtools"</span>;
+
+<span class="code-keyword">const</span> deploy = <span class="code-func">defineCommand</span>({
+  name: <span class="code-string">"deploy"</span>,
+  description: <span class="code-string">"Deploy the application"</span>,
+  <span class="code-keyword">async</span> <span class="code-func">action</span>() {
+    console.<span class="code-func">log</span>(<span class="code-string">"Deploying..."</span>);
+  },
+});
+
+<span class="code-comment">// withDevtools adds:</span>
+<span class="code-comment">// - Event capture middleware</span>
+<span class="code-comment">// - 'devtools' command for web dashboard</span>
+<span class="code-keyword">const</span> cli = <span class="code-func">defineCli</span>(<span class="code-func">withDevtools</span>({
+  name: <span class="code-string">"myapp"</span>,
+  version: <span class="code-string">"1.0.0"</span>,
+  commands: { deploy },
+}));
+
+cli.<span class="code-func">run</span>();
+
+<span class="code-comment">// Run: myapp devtools</span>
+<span class="code-comment">// Opens dashboard at http://localhost:4000</span>`
     };
 
     const codeOutput = document.getElementById('code-output')!;

@@ -169,7 +169,7 @@ Use Space to toggle selection, `a` to toggle all, Enter to confirm.
 
 ### Password
 
-Secure password input:
+Secure password input with character masking:
 
 ```typescript
 prompts: {
@@ -180,6 +180,8 @@ prompts: {
   },
 }
 ```
+
+Input is masked with `*` characters as you type, keeping sensitive data hidden.
 
 ### Autocomplete
 
