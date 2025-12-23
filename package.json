@@ -11,7 +11,7 @@
     "clean": "bun run ./scripts/clean.ts",
     "format": "oxfmt . --write",
     "format:check": "oxfmt . --check",
-    "lint": "oxlint . --fix",
+    "lint": "oxlint . --type-aware --fix",
     "lint:check": "oxlint . --type-aware",
     "types:check": "tsc --noEmit",
     "release": "bun scripts/release.ts"

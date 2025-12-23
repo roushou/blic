@@ -83,7 +83,7 @@ const newCommand = defineCommand({
       console.log(`  ${color.cyan("bun run dev")}`);
       console.log();
     } catch (err) {
-      spinner.fail(`Failed: ${err}`);
+      spinner.fail(`Failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   },

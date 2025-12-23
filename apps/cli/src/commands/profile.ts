@@ -141,7 +141,7 @@ async function showProfile(
   if (profileConfig.env && Object.keys(profileConfig.env).length > 0) {
     console.log(color.bold("Environment Variables:"));
     for (const [key, value] of Object.entries(profileConfig.env)) {
-      console.log(`  ${color.yellow(key)}=${color.cyan(`"${value}"`)}`);
+      console.log(`  ${color.yellow(key)}=${color.cyan(`"${String(value)}"`)}`);
     }
     console.log("");
   }
@@ -180,7 +180,7 @@ async function useProfile(name: string | undefined, profiles: string[]): Promise
   if (profileConfig?.env) {
     console.log(color.dim("Environment variables set:"));
     for (const [key, value] of Object.entries(profileConfig.env)) {
-      console.log(color.dim(`  ${key}=${value}`));
+      console.log(color.dim(`  ${key}=${String(value)}`));
     }
     console.log("");
   }

@@ -55,7 +55,7 @@ export function renderPromptLine<T>(
 
   // Default value (dim, in parens)
   if (schema.default !== undefined) {
-    parts.push(color.dim(` (${schema.default})`));
+    parts.push(color.dim(` (${String(schema.default)})`));
   }
 
   // Suffix (usually just space)

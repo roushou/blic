@@ -53,7 +53,7 @@ const get = defineCommand({
         console.log(text);
       }
     } catch (err) {
-      spinner.fail(`Request failed: ${err}`);
+      spinner.fail(`Request failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   },
@@ -123,7 +123,7 @@ const post = defineCommand({
         console.log(text);
       }
     } catch (err) {
-      spinner.fail(`Request failed: ${err}`);
+      spinner.fail(`Request failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   },
@@ -148,7 +148,7 @@ const head = defineCommand({
         console.log(`${color.bold(key)}: ${value}`);
       });
     } catch (err) {
-      spinner.fail(`Request failed: ${err}`);
+      spinner.fail(`Request failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   },
@@ -193,7 +193,7 @@ const download = defineCommand({
         console.log(color.dim(`  Size: ${size}`));
       }
     } catch (err) {
-      spinner?.fail(`Download failed: ${err}`);
+      spinner?.fail(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   },

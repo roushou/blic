@@ -199,23 +199,31 @@ function renderEventRow(event: DevToolsEvent): string {
 function formatEventData(event: DevToolsEvent): string {
   const data = event.data;
 
+  // Helper to safely stringify a value
+  const str = (val: unknown, fallback: string): string => {
+    if (val === undefined || val === null) return fallback;
+    if (typeof val === "string") return val;
+    if (typeof val === "number" || typeof val === "boolean") return String(val);
+    return JSON.stringify(val);
+  };
+
   // Format based on event type
   if (event.type === "command:start" || event.type === "command:end") {
-    return `Command: <code>${data.command || "unknown"}</code>`;
+    return `Command: <code>${str(data.command, "unknown")}</code>`;
   }
 
   if (event.type === "command:error") {
-    return `Error: <code>${data.message || data.error || "Unknown error"}</code>`;
+    return `Error: <code>${str(data.message ?? data.error, "Unknown error")}</code>`;
   }
 
   if (event.type === "request:in" || event.type === "request:out") {
-    const method = data.method || "GET";
-    const url = data.url || data.path || "/";
+    const method = str(data.method, "GET");
+    const url = str(data.url ?? data.path, "/");
     return `<code>${method}</code> ${url}`;
   }
 
   if (event.type.startsWith("log:")) {
-    return String(data.message || JSON.stringify(data));
+    return str(data.message, JSON.stringify(data));
   }
 
   return JSON.stringify(data);

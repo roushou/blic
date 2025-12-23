@@ -99,5 +99,5 @@ async function main() {
 
 // Only run main when executed directly (not when imported)
 if (import.meta.main) {
-  main();
+  await main();
 }

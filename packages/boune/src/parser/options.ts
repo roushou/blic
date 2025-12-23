@@ -323,10 +323,10 @@ const validateChoices = (value: unknown, def: InternalOptionDef): ValidationErro
   if (!def.choices || def.choices.length === 0) return undefined;
 
   if (!def.choices.includes(value)) {
-    const choicesStr = def.choices.map((c) => `"${c}"`).join(", ");
+    const choicesStr = def.choices.map((c) => `"${String(c)}"`).join(", ");
     return {
       type: "validation_failed",
-      message: `Invalid value "${value}" for --${def.name}. Must be one of: ${choicesStr}`,
+      message: `Invalid value "${String(value)}" for --${def.name}. Must be one of: ${choicesStr}`,
       field: def.name,
     };
   }

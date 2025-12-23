@@ -22,6 +22,6 @@ export function generateCompletion(config: CliConfig, shell: ShellType): string 
       return generateFishCompletion(config);
     default:
       const exhaustiveCheck: never = shell;
-      throw new Error(`Unsupported shell: ${exhaustiveCheck}`);
+      throw new Error(`Unsupported shell: ${String(exhaustiveCheck)}`);
   }
 }

@@ -79,7 +79,7 @@ class TestRunnerImpl implements TestRunner {
     };
 
     // Mock process.exit
-    const originalExit = process.exit;
+    const originalExit = process.exit.bind(process);
     let exitCalled = false;
 
     process.exit = ((code?: number) => {

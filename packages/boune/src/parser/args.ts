@@ -151,19 +151,19 @@ const validateChoices = (value: unknown, def: InternalArgumentDef): ValidationEr
   if (def.variadic && Array.isArray(value)) {
     for (const v of value) {
       if (!def.choices.includes(v)) {
-        const choicesStr = def.choices.map((c) => `"${c}"`).join(", ");
+        const choicesStr = def.choices.map((c) => `"${String(c)}"`).join(", ");
         return {
           type: "validation_failed",
-          message: `Invalid value "${v}" for <${def.name}>. Must be one of: ${choicesStr}`,
+          message: `Invalid value "${String(v)}" for <${def.name}>. Must be one of: ${choicesStr}`,
           field: def.name,
         };
       }
     }
   } else if (!def.choices.includes(value)) {
-    const choicesStr = def.choices.map((c) => `"${c}"`).join(", ");
+    const choicesStr = def.choices.map((c) => `"${String(c)}"`).join(", ");
     return {
       type: "validation_failed",
-      message: `Invalid value "${value}" for <${def.name}>. Must be one of: ${choicesStr}`,
+      message: `Invalid value "${String(value)}" for <${def.name}>. Must be one of: ${choicesStr}`,
       field: def.name,
     };
   }
