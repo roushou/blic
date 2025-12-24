@@ -4,8 +4,9 @@ import { defineCli, defineCommand } from "../packages/boune/src/index.ts";
 import { formatError, formatInfo, formatSuccess } from "../packages/boune/src/x/logger/index.ts";
 import bouneJsrPkg from "../packages/boune/jsr.json";
 import bounePkg from "../packages/boune/package.json";
+import cliPkg from "../apps/cli/package.json";
 import { confirm } from "../packages/boune/src/prompt/index.ts";
-import createBouneJsrPkg from "../packages/create-boune/package.json";
+import createBouneJsrPkg from "../packages/create-boune/jsr.json";
 import createBounePkg from "../packages/create-boune/package.json";
 
 // ============================================================================
@@ -20,7 +21,7 @@ type Package = {
   name: string;
   dir: string;
   npmName: string;
-  jsrName: string;
+  jsrName: string | null;
   version: string;
 };
 
@@ -49,9 +50,16 @@ const PACKAGES: Package[] = [
   {
     name: "create-boune",
     dir: "packages/create-boune",
-    npmName: bounePkg.name,
+    npmName: createBounePkg.name,
     jsrName: createBouneJsrPkg.name,
     version: createBounePkg.version,
+  },
+  {
+    name: "cli",
+    dir: "apps/cli",
+    npmName: cliPkg.name,
+    jsrName: null, // CLI is npm-only
+    version: cliPkg.version,
   },
 ];
 
@@ -94,17 +102,23 @@ async function updateVersion(pkg: Package, newVersion: string, dryRun: boolean):
   pkgJson.version = newVersion;
   await write(pkgJsonPath, pkgJson);
 
-  const jsrJsonPath = `${pkg.dir}/jsr.json`;
-  const jsrJson = await Bun.file(jsrJsonPath).json();
-  jsrJson.version = newVersion;
-  await write(jsrJsonPath, jsrJson);
+  // Only update jsr.json if the package has a jsrName
+  if (pkg.jsrName) {
+    const jsrJsonPath = `${pkg.dir}/jsr.json`;
+    const jsrJson = await Bun.file(jsrJsonPath).json();
+    jsrJson.version = newVersion;
+    await write(jsrJsonPath, jsrJson);
+  }
 
+  // When boune is bumped, update dependent packages
   if (pkg.name === "boune") {
-    const createPkgPath = "packages/create-boune/package.json";
-    const createPkg = await Bun.file(createPkgPath).json();
-    if (createPkg.dependencies?.boune) {
-      createPkg.dependencies.boune = `^${newVersion}`;
-      await write(createPkgPath, createPkg);
+    const dependentPaths = ["packages/create-boune/package.json", "apps/cli/package.json"];
+    for (const depPath of dependentPaths) {
+      const depPkg = await Bun.file(depPath).json();
+      if (depPkg.dependencies?.boune) {
+        depPkg.dependencies.boune = `^${newVersion}`;
+        await write(depPath, depPkg);
+      }
     }
   }
 
@@ -161,7 +175,8 @@ function buildReleasePlan(
       });
     }
 
-    if (!skipJsr) {
+    // Only publish to JSR if package has a jsrName
+    if (!skipJsr && pkg.jsrName) {
       pkgTasks.push({
         name: `Publish ${pkg.jsrName}@${newVersion} to jsr`,
         run: () => publish(pkg, "jsr", dryRun),
@@ -257,7 +272,7 @@ const bumpCommand = defineCommand({
       short: "p",
       long: "package",
       required: true,
-      description: "Package to bump: boune, create-boune, or all",
+      description: "Package to bump: boune, create-boune, cli, or all",
     },
     execute: {
       type: "boolean",
@@ -316,7 +331,7 @@ const releaseCommand = defineCommand({
       short: "p",
       long: "package",
       required: true,
-      description: "Package to release: boune, create-boune, or all",
+      description: "Package to release: boune, create-boune, cli, or all",
     },
     execute: {
       type: "boolean",

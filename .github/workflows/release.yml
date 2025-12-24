@@ -9,13 +9,67 @@ permissions:
   contents: write
 
 jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: bun-linux-x64
+            artifact: boune-linux-x64
+          - os: ubuntu-latest
+            target: bun-linux-arm64
+            artifact: boune-linux-arm64
+          - os: macos-latest
+            target: bun-darwin-x64
+            artifact: boune-darwin-x64
+          - os: macos-latest
+            target: bun-darwin-arm64
+            artifact: boune-darwin-arm64
+          - os: ubuntu-latest
+            target: bun-windows-x64
+            artifact: boune-windows-x64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build binary
+        run: bun build apps/cli/src/app.ts --compile --target=${{ matrix.target }} --outfile=dist/${{ matrix.artifact }} --minify
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}
+
   release:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+          cat checksums.txt
 
       - name: Generate changelog
         uses: orhun/git-cliff-action@v4
@@ -31,4 +85,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body: ${{ steps.changelog.outputs.content }}
+          files: |
+            dist/boune-linux-x64
+            dist/boune-linux-arm64
+            dist/boune-darwin-x64
+            dist/boune-darwin-arm64
+            dist/boune-windows-x64.exe
+            dist/checksums.txt
           token: ${{ secrets.GITHUB_TOKEN }}
